@@ -1,4 +1,8 @@
-package repository
+package databasetest
+
+type Identifiable interface {
+	GetId() int
+}
 
 type Database[T any] interface {
 	GetObjectById(id int) (T, error)

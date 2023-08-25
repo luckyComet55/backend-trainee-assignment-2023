@@ -15,17 +15,19 @@ func helloRootHandler(w http.ResponseWriter, r *http.Request) {
 
 func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	segmentName := chi.URLParam(r, "segmentName")
-	fmt.Printf("%s %s ==> create segment %s\n", r.Method, r.URL.Path, segmentName)
-
 	res := ""
+	logStatus := ""
 	statusCode := 200
-	segment := sg.NewSegment(1, segmentName)
+	segment := sg.NewSegment(segmentName)
 	if err := repo.Db.CreateObject(segment); err != nil {
 		res = err.Error()
 		statusCode = 400
+		logStatus = "DENIED"
 	} else {
 		res = "success!"
+		logStatus = "SUCCESS"
 	}
+	fmt.Printf("%s %s ==> create segment %s | %s\n", r.Method, r.URL.Path, segmentName, logStatus)
 	w.WriteHeader(statusCode)
 	fmt.Fprintln(w, res)
 }

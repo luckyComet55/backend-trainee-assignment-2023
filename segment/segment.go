@@ -1,21 +1,25 @@
 package segment
 
+var idCounter int = 0
+
 type Segment struct {
-	Id   int
-	Name string
+	id   int
+	name string
 }
 
-func NewSegment(id int, name string) Segment {
+func NewSegment(name string) Segment {
+	newId := idCounter
+	idCounter++
 	return Segment{
-		Id:   id,
-		Name: name,
+		id:   newId,
+		name: name,
 	}
 }
 
 func (s Segment) GetId() int {
-	return s.Id
+	return s.id
 }
 
 func (s Segment) GetName() string {
-	return s.Name
+	return s.name
 }
