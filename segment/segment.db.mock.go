@@ -24,6 +24,15 @@ func (d *SegmentMockDatabase) GetObjectById(id int) (Segment, error) {
 	}
 }
 
+func (d *SegmentMockDatabase) GetObjectByName(name string) (Segment, error) {
+	for _, v := range d.storage {
+		if name == v.GetName() {
+			return v, nil
+		}
+	}
+	return Segment{}, db.ErrObjNotFound{}
+}
+
 func (d *SegmentMockDatabase) CreateObject(s Segment) error {
 	if _, ok := d.storage[s.GetId()]; ok {
 		return db.ErrObjAlreadyExists{Id: s.GetId()}

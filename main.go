@@ -20,7 +20,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Get("/", helloRootHandler)
 	r.Post("/{segmentName}", createSegmentHandler)
-	r.Delete("/{segmtnName}", deleteSegmentHandler)
+	r.Delete("/{segmentName}", deleteSegmentHandler)
 
 	log.Fatal(http.ListenAndServe(":"+*port, r))
 }

@@ -15,17 +15,14 @@ func helloRootHandler(w http.ResponseWriter, r *http.Request) {
 
 func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	segmentName := chi.URLParam(r, "segmentName")
-	res := ""
-	logStatus := ""
+	res := "success!"
+	logStatus := "SUCCESS"
 	statusCode := 200
 	segment := sg.NewSegment(segmentName)
 	if err := repo.Db.CreateObject(segment); err != nil {
 		res = err.Error()
 		statusCode = 400
 		logStatus = "DENIED"
-	} else {
-		res = "success!"
-		logStatus = "SUCCESS"
 	}
 	fmt.Printf("%s %s ==> create segment %s | %s\n", r.Method, r.URL.Path, segmentName, logStatus)
 	w.WriteHeader(statusCode)
@@ -34,5 +31,21 @@ func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 
 func deleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	segmentName := chi.URLParam(r, "segmentName")
-	fmt.Printf("%s %s ==> delete segment %s\n", r.Method, r.URL.Path, segmentName)
+	res := "success!"
+	logStatus := "SUCCESS"
+	statusCode := 200
+	if segment, err := repo.Db.GetObjectByName(segmentName); err != nil {
+		res = err.Error()
+		statusCode = 400
+		logStatus = "DENIED"
+	} else {
+		if err = repo.Db.DeleteObject(segment); err != nil {
+			res = err.Error()
+			statusCode = 400
+			logStatus = "DENIED"
+		}
+	}
+	fmt.Printf("%s %s ==> delete segment %s | %s\n", r.Method, r.URL.Path, segmentName, logStatus)
+	w.WriteHeader(statusCode)
+	fmt.Fprintln(w, res)
 }
