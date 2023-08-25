@@ -10,7 +10,7 @@ import (
 	sg "github.com/luckyComet55/backend-trainee-assignment-2023/segment"
 )
 
-var db *sg.SegmentDatabase = sg.NewSegmentDatabase()
+var db *sg.SegmentMockDatabase = sg.NewSegmentMockDatabase()
 var repo rp.Repository[sg.Segment] = rp.NewRepository[sg.Segment](db)
 
 func main() {
