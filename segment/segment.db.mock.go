@@ -24,7 +24,7 @@ func (d *SegmentMockDatabase) GetObjectById(id int) (Segment, error) {
 	}
 }
 
-func (d *SegmentMockDatabase) GetObjectByName(name string) (Segment, error) {
+func (d *SegmentMockDatabase) GetByName(name string) (Segment, error) {
 	for _, v := range d.storage {
 		if name == v.GetName() {
 			return v, nil

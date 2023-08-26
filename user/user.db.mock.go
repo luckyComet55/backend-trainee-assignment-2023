@@ -22,10 +22,6 @@ func (d *UserMockDatabase) GetObjectById(id int) (User, error) {
 	}
 }
 
-func (d *UserMockDatabase) GetObjectByName(name string) (User, error) {
-	return User{}, db.ErrUnsupportedMethod{}
-}
-
 func (d *UserMockDatabase) CreateObject(user User) error {
 	if _, ok := d.storage[user.GetId()]; ok {
 		return db.ErrObjAlreadyExists{Id: user.GetId()}

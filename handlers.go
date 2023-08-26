@@ -45,7 +45,7 @@ func deleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	res := "success!"
 	logStatus := "SUCCESS"
 	statusCode := 200
-	if segment, err := repoSegment.Db.GetObjectByName(segmentName); err != nil {
+	if segment, err := repoSegment.Db.GetByName(segmentName); err != nil {
 		res = err.Error()
 		statusCode = 400
 		logStatus = "DENIED"

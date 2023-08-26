@@ -2,8 +2,6 @@ package usersegment
 
 import (
 	db "github.com/luckyComet55/backend-trainee-assignment-2023/database"
-	sg "github.com/luckyComet55/backend-trainee-assignment-2023/segment"
-	usr "github.com/luckyComet55/backend-trainee-assignment-2023/user"
 )
 
 type UserSegmentMockDatabase struct {
@@ -28,18 +26,18 @@ func (d *UserSegmentMockDatabase) GetObjectByName(name string) (UserSegment, err
 	return UserSegment{}, db.ErrUnsupportedMethod{}
 }
 
-func (d *UserSegmentMockDatabase) GetByUser(user usr.User) (UserSegment, error) {
+func (d *UserSegmentMockDatabase) GetByUserId(id int) (UserSegment, error) {
 	for _, v := range d.storage {
-		if v.userId == user.GetId() {
+		if v.userId == id {
 			return v, nil
 		}
 	}
 	return UserSegment{}, db.ErrObjNotFound{}
 }
 
-func (d *UserSegmentMockDatabase) GetBySegment(segment sg.Segment) (UserSegment, error) {
+func (d *UserSegmentMockDatabase) GetBySegmentId(id int) (UserSegment, error) {
 	for _, v := range d.storage {
-		if v.segmentId == segment.GetId() {
+		if v.segmentId == id {
 			return v, nil
 		}
 	}
