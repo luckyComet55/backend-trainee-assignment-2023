@@ -22,26 +22,24 @@ func (d *UserSegmentMockDatabase) GetObjectById(id int) (UserSegment, error) {
 	}
 }
 
-func (d *UserSegmentMockDatabase) GetObjectByName(name string) (UserSegment, error) {
-	return UserSegment{}, db.ErrUnsupportedMethod{}
-}
-
-func (d *UserSegmentMockDatabase) GetByUserId(id int) (UserSegment, error) {
+func (d *UserSegmentMockDatabase) GetByUserId(id int) []UserSegment {
+	res := make([]UserSegment, 0)
 	for _, v := range d.storage {
 		if v.userId == id {
-			return v, nil
+			res = append(res, v)
 		}
 	}
-	return UserSegment{}, db.ErrObjNotFound{}
+	return res
 }
 
-func (d *UserSegmentMockDatabase) GetBySegmentId(id int) (UserSegment, error) {
+func (d *UserSegmentMockDatabase) GetBySegmentId(id int) []UserSegment {
+	res := make([]UserSegment, 0)
 	for _, v := range d.storage {
 		if v.segmentId == id {
-			return v, nil
+			res = append(res, v)
 		}
 	}
-	return UserSegment{}, db.ErrObjNotFound{}
+	return res
 }
 
 func (d *UserSegmentMockDatabase) CreateObject(userSegment UserSegment) error {
@@ -65,5 +63,27 @@ func (d *UserSegmentMockDatabase) DeleteObject(userSegment UserSegment) error {
 		return db.ErrObjNotFound{}
 	}
 	delete(d.storage, userSegment.GetId())
+	return nil
+}
+
+func (d *UserSegmentMockDatabase) DeleteByUserId(id int) error {
+	for k, v := range d.storage {
+		if v.userId == id {
+			delete(d.storage, k)
+		}
+	}
+	// only possible error -- no connection
+	// however it`s disputable
+	return nil
+}
+
+func (d *UserSegmentMockDatabase) DeleteBySegmentId(id int) error {
+	for k, v := range d.storage {
+		if v.segmentId == id {
+			delete(d.storage, k)
+		}
+	}
+	// only possible error -- no connection
+	// however it`s disputable
 	return nil
 }

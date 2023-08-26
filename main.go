@@ -27,6 +27,7 @@ func main() {
 	r.Post("/{segmentName}", createSegmentHandler)
 	r.Delete("/{segmentName}", deleteSegmentHandler)
 	r.Put("/modify-user-segments", modifyUserSegments)
+	r.Get("/{userId:[0-9]+}", getUserSegments)
 
 	log.Fatal(http.ListenAndServe(":"+*port, r))
 }

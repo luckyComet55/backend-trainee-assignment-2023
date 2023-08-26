@@ -1,15 +1,11 @@
 package repository
 
 import (
-	db "github.com/luckyComet55/backend-trainee-assignment-2023/database"
+	sg "github.com/luckyComet55/backend-trainee-assignment-2023/segment"
+	usr "github.com/luckyComet55/backend-trainee-assignment-2023/user"
 )
 
-type Repository[T db.Identifiable] struct {
-	Db db.Database[T]
-}
-
-func NewRepository[T db.Identifiable](db db.Database[T]) Repository[T] {
-	return Repository[T]{
-		Db: db,
-	}
+type ServiceRepository interface {
+	GetUsersBySegmentId(int) ([]usr.User, error)
+	GetSegmentsByUserId(int) ([]sg.Segment, error)
 }

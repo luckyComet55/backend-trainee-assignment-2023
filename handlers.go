@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 
@@ -14,6 +15,10 @@ type userSegmentsModifyBody struct {
 	UserId     int
 	SgToAdd    []sg.Segment
 	SgToRemove []sg.Segment
+}
+
+type userSegmentsResponseBody struct {
+	Segments []sg.Segment `json:"segments"`
 }
 
 func (u userSegmentsModifyBody) String() string {
@@ -74,7 +79,30 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 		logStatus = "DENIED"
 		statusCode = 400
 	}
-	fmt.Printf("%s %s ==> modify user segment %v | %s\n", r.Method, r.URL.Path, reqBody, logStatus)
+	fmt.Printf("%s %s ==> modify user segment | %s%v", r.Method, r.URL.Path, logStatus, reqBody)
+	w.WriteHeader(statusCode)
+	fmt.Fprintln(w, res)
+}
+
+func getUserSegments(w http.ResponseWriter, r *http.Request) {
+	userIdStr := chi.URLParam(r, "userId")
+	res := make([]byte, 0)
+	userSegments := userSegmentsResponseBody{Segments: make([]sg.Segment, 0)}
+	statusCode := 200
+	logStatus := "SUCCESS"
+	_, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		statusCode = 400
+		logStatus = "DENIED"
+	} else {
+		res, err = json.Marshal(userSegments)
+		if err != nil {
+			res = []byte(err.Error())
+			statusCode = 400
+			logStatus = "DENIED"
+		}
+	}
+	fmt.Printf("%s %s ==> modify user segment %v | %s\n", r.Method, r.URL.Path, userSegments.Segments, logStatus)
 	w.WriteHeader(statusCode)
 	fmt.Fprintln(w, res)
 }
