@@ -10,4 +10,5 @@ type UserSegmentDatabase interface {
 	GetBySegmentId(int) []UserSegment
 	DeleteByUserId(int) error
 	DeleteBySegmentId(int) error
+	DeleteByUserIdWithSegmentId(int, int) error
 }

@@ -1,14 +1,18 @@
 package usersegment
 
+var idCounter int = 0
+
 type UserSegment struct {
 	id        int
 	userId    int
 	segmentId int
 }
 
-func NewUserSegment(id, userId, segmentId int) UserSegment {
+func NewUserSegment(userId, segmentId int) UserSegment {
+	newId := idCounter
+	idCounter++
 	return UserSegment{
-		id:        id,
+		id:        newId,
 		userId:    userId,
 		segmentId: segmentId,
 	}

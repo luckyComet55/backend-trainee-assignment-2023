@@ -9,12 +9,13 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	sg "github.com/luckyComet55/backend-trainee-assignment-2023/segment"
+	usg "github.com/luckyComet55/backend-trainee-assignment-2023/usersegment"
 )
 
 type userSegmentsModifyBody struct {
 	UserId     int
-	SgToAdd    []sg.Segment
-	SgToRemove []sg.Segment
+	SgToAdd    []string
+	SgToRemove []string
 }
 
 type userSegmentsResponseBody struct {
@@ -66,6 +67,21 @@ func deleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, res)
 }
 
+func xorStringArrays(a, b []string) []string {
+	checker := make(map[string]bool, len(a)+len(b))
+	res := make([]string, 0, len(a))
+	for _, s := range b {
+		checker[s] = true
+	}
+	for _, s := range a {
+		if _, ok := checker[s]; !ok {
+			res = append(res, s)
+			checker[s] = true
+		}
+	}
+	return res
+}
+
 func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 	var reqBody userSegmentsModifyBody
 	decoder := json.NewDecoder(r.Body)
@@ -78,6 +94,45 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 		res = err.Error()
 		logStatus = "DENIED"
 		statusCode = 400
+	} else {
+		toAdd := xorStringArrays(reqBody.SgToAdd, reqBody.SgToRemove)
+		toRm := xorStringArrays(reqBody.SgToRemove, reqBody.SgToAdd)
+		userId := reqBody.UserId
+
+		// it must be like some kind of a transaction
+		// so if one value is incorrect, the others will be ignored
+		for _, v := range toRm {
+			r, err := serviceRepo.SegmentDb.GetByName(v)
+			if err != nil {
+				res = err.Error()
+				logStatus = "DENIED"
+				statusCode = 400
+				break
+			}
+			err = serviceRepo.UserSegmentDb.DeleteByUserIdWithSegmentId(userId, r.GetId())
+			if err != nil {
+				res = err.Error()
+				logStatus = "DENIED"
+				statusCode = 500
+				break
+			}
+		}
+		for _, v := range toAdd {
+			r, err := serviceRepo.SegmentDb.GetByName(v)
+			if err != nil {
+				res = err.Error()
+				logStatus = "DENIED"
+				statusCode = 400
+				break
+			}
+			err = serviceRepo.UserSegmentDb.CreateObject(usg.NewUserSegment(userId, r.GetId()))
+			if err != nil {
+				res = err.Error()
+				logStatus = "DENIED"
+				statusCode = 400
+				break
+			}
+		}
 	}
 	fmt.Printf("%s %s ==> modify user segment | %s%v", r.Method, r.URL.Path, logStatus, reqBody)
 	w.WriteHeader(statusCode)

@@ -87,3 +87,15 @@ func (d *UserSegmentMockDatabase) DeleteBySegmentId(id int) error {
 	// however it`s disputable
 	return nil
 }
+
+func (d *UserSegmentMockDatabase) DeleteByUserIdWithSegmentId(userId int, segmentId int) error {
+	for k, v := range d.storage {
+		if v.userId == userId && v.segmentId == segmentId {
+			delete(d.storage, k)
+			break
+		}
+	}
+	// only possible error -- no connection
+	// however it`s disputable
+	return nil
+}
