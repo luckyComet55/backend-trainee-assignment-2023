@@ -19,7 +19,7 @@ type userSegmentsModifyBody struct {
 }
 
 type userSegmentsResponseBody struct {
-	Segments []sg.Segment `json:"segments"`
+	Segments []string `json:"segments"`
 }
 
 func (u userSegmentsModifyBody) String() string {
@@ -143,19 +143,22 @@ func getUserSegments(w http.ResponseWriter, r *http.Request) {
 	userIdStr := chi.URLParam(r, "userId")
 	res := make([]byte, 0)
 	statusCode := 200
-	userSegments := userSegmentsResponseBody{}
+	userSegments := userSegmentsResponseBody{Segments: make([]string, 0)}
 	logStatus := "SUCCESS"
 	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
 		statusCode = 400
 		logStatus = "DENIED"
 	} else {
-		userSegments.Segments, err = serviceRepo.GetSegmentsByUserId(userId)
+		arr, err := serviceRepo.GetSegmentsByUserId(userId)
 		if err != nil {
 			res = []byte(err.Error())
 			statusCode = 400
 			logStatus = "DENIED"
 		} else {
+			for _, v := range arr {
+				userSegments.Segments = append(userSegments.Segments, v.Name)
+			}
 			res, err = json.Marshal(userSegments)
 			if err != nil {
 				res = []byte(err.Error())
