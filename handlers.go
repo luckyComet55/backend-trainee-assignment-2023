@@ -142,19 +142,26 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 func getUserSegments(w http.ResponseWriter, r *http.Request) {
 	userIdStr := chi.URLParam(r, "userId")
 	res := make([]byte, 0)
-	userSegments := userSegmentsResponseBody{Segments: make([]sg.Segment, 0)}
 	statusCode := 200
+	userSegments := userSegmentsResponseBody{}
 	logStatus := "SUCCESS"
-	_, err := strconv.Atoi(userIdStr)
+	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
 		statusCode = 400
 		logStatus = "DENIED"
 	} else {
-		res, err = json.Marshal(userSegments)
+		userSegments.Segments, err = serviceRepo.GetSegmentsByUserId(userId)
 		if err != nil {
 			res = []byte(err.Error())
 			statusCode = 400
 			logStatus = "DENIED"
+		} else {
+			res, err = json.Marshal(userSegments)
+			if err != nil {
+				res = []byte(err.Error())
+				statusCode = 400
+				logStatus = "DENIED"
+			}
 		}
 	}
 	fmt.Printf("%s %s ==> modify user segment %v | %s\n", r.Method, r.URL.Path, userSegments.Segments, logStatus)
