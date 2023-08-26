@@ -20,7 +20,7 @@ var serviceRepo repo.ServiceMockRepository = *repo.NewServiceMockRepository(dbUs
 func main() {
 	port := flag.String("port", "3003", "port the server will listen to")
 	flag.Parse()
-
+	usr.InitMockData(dbUser)
 	r := chi.NewRouter()
 	r.Get("/", helloRootHandler)
 	r.Post("/{segmentName}", createSegmentHandler)

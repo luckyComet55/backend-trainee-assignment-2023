@@ -166,5 +166,5 @@ func getUserSegments(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("%s %s ==> modify user segment %v | %s\n", r.Method, r.URL.Path, userSegments.Segments, logStatus)
 	w.WriteHeader(statusCode)
-	fmt.Fprintln(w, res)
+	fmt.Fprintln(w, string(res[:]))
 }

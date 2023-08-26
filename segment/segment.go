@@ -4,7 +4,7 @@ var idCounter int = 0
 
 type Segment struct {
 	id   int
-	name string
+	Name string `json:"name"`
 }
 
 func NewSegment(name string) Segment {
@@ -12,7 +12,7 @@ func NewSegment(name string) Segment {
 	idCounter++
 	return Segment{
 		id:   newId,
-		name: name,
+		Name: name,
 	}
 }
 
@@ -21,5 +21,5 @@ func (s Segment) GetId() int {
 }
 
 func (s Segment) GetName() string {
-	return s.name
+	return s.Name
 }
