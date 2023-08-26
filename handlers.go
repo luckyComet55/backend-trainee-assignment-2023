@@ -35,7 +35,7 @@ func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	logStatus := "SUCCESS"
 	statusCode := 200
 	segment := sg.NewSegment(segmentName)
-	if err := repoSegment.Db.CreateObject(segment); err != nil {
+	if err := serviceRepo.SegmentDb.CreateObject(segment); err != nil {
 		res = err.Error()
 		statusCode = 400
 		logStatus = "DENIED"
@@ -50,12 +50,12 @@ func deleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	res := "success!"
 	logStatus := "SUCCESS"
 	statusCode := 200
-	if segment, err := repoSegment.Db.GetByName(segmentName); err != nil {
+	if segment, err := serviceRepo.SegmentDb.GetByName(segmentName); err != nil {
 		res = err.Error()
 		statusCode = 400
 		logStatus = "DENIED"
 	} else {
-		if err = repoSegment.Db.DeleteObject(segment); err != nil {
+		if err = serviceRepo.SegmentDb.DeleteObject(segment); err != nil {
 			res = err.Error()
 			statusCode = 400
 			logStatus = "DENIED"
