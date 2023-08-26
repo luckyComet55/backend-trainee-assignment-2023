@@ -23,7 +23,7 @@ func (d *UserMockDatabase) GetObjectById(id int) (User, error) {
 }
 
 func (d *UserMockDatabase) GetObjectByName(name string) (User, error) {
-	return User{}, ErrUnsupportedMethod{}
+	return User{}, db.ErrUnsupportedMethod{}
 }
 
 func (d *UserMockDatabase) CreateObject(user User) error {
