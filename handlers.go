@@ -13,26 +13,32 @@ import (
 )
 
 type userSegmentsModifyBody struct {
-	UserId     int
-	SgToAdd    []string
-	SgToRemove []string
+	UserId           int      `json:"user_id"`
+	SegmentsToAdd    []string `json:"segments_add"`
+	SegmentsToRemove []string `json:"segments_remove"`
 }
 
 type userSegmentsResponseBody struct {
 	Segments []string `json:"segments"`
 }
 
+type userModifyErrorResponse struct {
+	Message          string   `json:"message"`
+	SegmentsToRemove []string `json:"segments_add,omitempty"`
+	SegmentsToAdd    []string `json:"segments_remove,omitempty"`
+}
+
 func (u userSegmentsModifyBody) String() string {
-	return fmt.Sprintf("\n========\nUSER %dto add: %v\nto remove%v\n========\n", u.UserId, u.SgToAdd, u.SgToRemove)
+	return fmt.Sprintf("\n========\nUSER %dto add: %v\nto remove%v\n========\n", u.UserId, u.SegmentsToAdd, u.SegmentsToRemove)
 }
 
 func helloRootHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hello!")
+	fmt.Fprintln(w, "OK")
 }
 
 func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	segmentName := chi.URLParam(r, "segmentName")
-	res := "success!"
+	res := "OK"
 	logStatus := "SUCCESS"
 	statusCode := 200
 	segment := sg.NewSegment(segmentName)
@@ -48,17 +54,17 @@ func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 
 func deleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	segmentName := chi.URLParam(r, "segmentName")
-	res := "success!"
+	res := "OK"
 	logStatus := "SUCCESS"
 	statusCode := 200
 	if segment, err := serviceRepo.SegmentDb.GetByName(segmentName); err != nil {
-		res = err.Error()
-		statusCode = 400
+		res = "segment doesn't exist"
+		statusCode = 404
 		logStatus = "DENIED"
 	} else {
 		if err = serviceRepo.SegmentDb.DeleteObject(segment); err != nil {
-			res = err.Error()
-			statusCode = 400
+			res = "internal error"
+			statusCode = 500
 			logStatus = "DENIED"
 		}
 	}
@@ -67,76 +73,75 @@ func deleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, res)
 }
 
-func xorStringArrays(a, b []string) []string {
-	checker := make(map[string]bool, len(a)+len(b))
-	res := make([]string, 0, len(a))
-	for _, s := range b {
-		checker[s] = true
-	}
-	for _, s := range a {
-		if _, ok := checker[s]; !ok {
-			res = append(res, s)
-			checker[s] = true
-		}
-	}
-	return res
-}
-
 func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 	var reqBody userSegmentsModifyBody
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
-	res := "success!"
-	logStatus := "SUCCESS"
-	statusCode := 200
 	if err := decoder.Decode(&reqBody); err != nil {
 		// add case of incorrect body format
-		res = err.Error()
-		logStatus = "DENIED"
-		statusCode = 400
-	} else {
-		toAdd := xorStringArrays(reqBody.SgToAdd, reqBody.SgToRemove)
-		toRm := xorStringArrays(reqBody.SgToRemove, reqBody.SgToAdd)
-		userId := reqBody.UserId
+		writeResponse(w, []byte("incorrect body format"), 400)
+		return
+	}
+	toAdd := xorStringArrays(reqBody.SegmentsToAdd, reqBody.SegmentsToRemove)
+	toRm := xorStringArrays(reqBody.SegmentsToRemove, reqBody.SegmentsToAdd)
+	userId := reqBody.UserId
+	if _, err := serviceRepo.UserDb.GetObjectById(userId); err != nil {
+		writeResponse(w, []byte("user with provided id not found"), 400)
+		return
+	}
 
-		// it must be like some kind of a transaction
-		// so if one value is incorrect, the others will be ignored
-		for _, v := range toRm {
-			r, err := serviceRepo.SegmentDb.GetByName(v)
-			if err != nil {
-				res = err.Error()
-				logStatus = "DENIED"
-				statusCode = 400
-				break
-			}
-			err = serviceRepo.UserSegmentDb.DeleteByUserIdWithSegmentId(userId, r.GetId())
-			if err != nil {
-				res = err.Error()
-				logStatus = "DENIED"
-				statusCode = 500
-				break
-			}
-		}
-		for _, v := range toAdd {
-			r, err := serviceRepo.SegmentDb.GetByName(v)
-			if err != nil {
-				res = err.Error()
-				logStatus = "DENIED"
-				statusCode = 400
-				break
-			}
-			err = serviceRepo.UserSegmentDb.CreateObject(usg.NewUserSegment(userId, r.GetId()))
-			if err != nil {
-				res = err.Error()
-				logStatus = "DENIED"
-				statusCode = 400
-				break
-			}
+	// it must be like some kind of a transaction
+	// so if one value is incorrect, the others will be ignored
+	isOkRm, isOkAdd := true, true
+	removabe, addable := make([]int, 0, len(toRm)), make([]int, 0, len(toAdd))
+	unableToRm, unableToAdd := make([]string, 0, len(toRm)), make([]string, 0, len(toAdd))
+	var errorResponse userModifyErrorResponse = userModifyErrorResponse{}
+	for _, v := range toRm {
+		r, err := serviceRepo.SegmentDb.GetByName(v)
+		if err != nil {
+			unableToRm = append(unableToRm, v)
+			isOkRm = false
+		} else {
+			removabe = append(removabe, r.GetId())
 		}
 	}
-	fmt.Printf("%s %s ==> modify user segment | %s%v", r.Method, r.URL.Path, logStatus, reqBody)
-	w.WriteHeader(statusCode)
-	w.Write([]byte(res))
+	for _, v := range toAdd {
+		r, err := serviceRepo.SegmentDb.GetByName(v)
+		if err != nil {
+			unableToAdd = append(unableToAdd, v)
+			isOkAdd = false
+		} else {
+			addable = append(addable, r.GetId())
+		}
+	}
+	if !(isOkAdd && isOkRm) {
+		errorResponse.Message = "objects with these values were not found"
+		if len(unableToAdd) > 0 {
+			errorResponse.SegmentsToAdd = unableToAdd
+		}
+		if len(unableToRm) > 0 {
+			errorResponse.SegmentsToRemove = unableToRm
+		}
+		resp, _ := json.Marshal(errorResponse)
+		writeResponse(w, resp, 400)
+		return
+	}
+	for _, v := range removabe {
+		err := serviceRepo.UserSegmentDb.DeleteByUserIdWithSegmentId(userId, v)
+		if err != nil {
+			writeResponse(w, []byte("internal error"), 500)
+			return
+		}
+	}
+	for _, v := range addable {
+		userSegment := usg.NewUserSegment(userId, v)
+		err := serviceRepo.UserSegmentDb.CreateObject(userSegment)
+		if err != nil {
+			writeResponse(w, []byte("internal error"), 500)
+			return
+		}
+	}
+	writeResponse(w, []byte("OK"), 200)
 }
 
 func getUserSegments(w http.ResponseWriter, r *http.Request) {
@@ -170,4 +175,25 @@ func getUserSegments(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	w.Write(res)
+}
+
+func xorStringArrays(a, b []string) []string {
+	checker := make(map[string]bool, len(a)+len(b))
+	res := make([]string, 0, len(a))
+	for _, s := range b {
+		checker[s] = true
+	}
+	for _, s := range a {
+		if _, ok := checker[s]; !ok {
+			res = append(res, s)
+			checker[s] = true
+		}
+	}
+	return res
+}
+
+func writeResponse(w http.ResponseWriter, msg []byte, statusCode int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	w.Write(msg)
 }
