@@ -3,21 +3,21 @@ package segment
 var idCounter int = 0
 
 type Segment struct {
-	id   int
-	Name string `json:"name"`
+	Id   int    `json:"-" ksql:"id"`
+	Name string `json:"name" ksql:"name"`
 }
 
 func NewSegment(name string) Segment {
 	newId := idCounter
 	idCounter++
 	return Segment{
-		id:   newId,
+		Id:   newId,
 		Name: name,
 	}
 }
 
 func (s Segment) GetId() int {
-	return s.id
+	return s.Id
 }
 
 func (s Segment) GetName() string {

@@ -43,6 +43,7 @@ func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	logStatus := "SUCCESS"
 	statusCode := 200
 	segment := sg.NewSegment(segmentName)
+	fmt.Println(segment)
 	if err := serviceRepo.SegmentDb.CreateObject(segment); err != nil {
 		res = err.Error()
 		statusCode = 400
