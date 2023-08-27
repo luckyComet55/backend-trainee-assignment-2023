@@ -65,3 +65,13 @@ func (d *SegmentMockDatabase) DeleteObject(s Segment) error {
 	delete(d.storage, s.GetId())
 	return nil
 }
+
+func (d *SegmentMockDatabase) DeleteByName(name string) error {
+	for k, v := range d.storage {
+		if v.Name == name {
+			delete(d.storage, k)
+			break
+		}
+	}
+	return nil
+}

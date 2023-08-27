@@ -59,16 +59,10 @@ func deleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	res := "OK"
 	logStatus := "SUCCESS"
 	statusCode := 200
-	if segment, err := serviceRepo.SegmentDb.GetByName(segmentName); err != nil {
-		res = "segment doesn't exist"
-		statusCode = 404
+	if err := serviceRepo.SegmentDb.DeleteByName(segmentName); err != nil {
+		res = "internal error"
+		statusCode = 500
 		logStatus = "DENIED"
-	} else {
-		if err = serviceRepo.SegmentDb.DeleteObject(segment); err != nil {
-			res = "internal error"
-			statusCode = 500
-			logStatus = "DENIED"
-		}
 	}
 	fmt.Printf("%s %s ==> delete segment %s | %s\n", r.Method, r.URL.Path, segmentName, logStatus)
 	w.WriteHeader(statusCode)

@@ -7,4 +7,5 @@ import (
 type SegmentDatabase interface {
 	db.Database[Segment]
 	GetByName(string) (Segment, error)
+	DeleteByName(string) error
 }
