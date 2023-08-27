@@ -136,38 +136,38 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("%s %s ==> modify user segment | %s%v", r.Method, r.URL.Path, logStatus, reqBody)
 	w.WriteHeader(statusCode)
-	fmt.Fprintln(w, res)
+	w.Write([]byte(res))
 }
 
 func getUserSegments(w http.ResponseWriter, r *http.Request) {
 	userIdStr := chi.URLParam(r, "userId")
-	res := make([]byte, 0)
+	var res []byte
 	statusCode := 200
 	userSegments := userSegmentsResponseBody{Segments: make([]string, 0)}
 	logStatus := "SUCCESS"
-	userId, err := strconv.Atoi(userIdStr)
+
+	// we ignore error, returned by atoi
+	// because our router checks if the
+	// value contains digits only
+	userId, _ := strconv.Atoi(userIdStr)
+	arr, err := serviceRepo.GetSegmentsByUserId(userId)
 	if err != nil {
-		statusCode = 400
-		logStatus = "DENIED"
+		res = []byte("user not found")
+		statusCode = 404
+		logStatus = "DENIED --> No such user"
 	} else {
-		arr, err := serviceRepo.GetSegmentsByUserId(userId)
+		for _, v := range arr {
+			userSegments.Segments = append(userSegments.Segments, v.Name)
+		}
+		res, err = json.Marshal(userSegments)
 		if err != nil {
-			res = []byte(err.Error())
-			statusCode = 400
-			logStatus = "DENIED"
-		} else {
-			for _, v := range arr {
-				userSegments.Segments = append(userSegments.Segments, v.Name)
-			}
-			res, err = json.Marshal(userSegments)
-			if err != nil {
-				res = []byte(err.Error())
-				statusCode = 400
-				logStatus = "DENIED"
-			}
+			res = []byte("Internal error")
+			statusCode = 500
+			logStatus = "DENIED --> Marshalling error"
 		}
 	}
-	fmt.Printf("%s %s ==> modify user segment %v | %s\n", r.Method, r.URL.Path, userSegments.Segments, logStatus)
+	fmt.Printf("%s %s ==> get user %d segments %v | %s\n", r.Method, r.URL.Path, userId, userSegments.Segments, logStatus)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	fmt.Fprintln(w, string(res[:]))
+	w.Write(res)
 }
