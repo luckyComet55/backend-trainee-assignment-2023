@@ -1,6 +1,7 @@
 package repository
 
 import (
+	db "github.com/luckyComet55/backend-trainee-assignment-2023/database"
 	sg "github.com/luckyComet55/backend-trainee-assignment-2023/segment"
 	usr "github.com/luckyComet55/backend-trainee-assignment-2023/user"
 	ug "github.com/luckyComet55/backend-trainee-assignment-2023/usersegment"
@@ -52,4 +53,23 @@ func (r *ServiceMockRepository) GetUsersBySegmentId(id int) ([]usr.User, error) 
 		}
 	}
 	return res, nil
+}
+
+func (r *ServiceMockRepository) CheckNonExistantSegments(segmentNames []string) ([]string, []int) {
+	existing := make([]int, 0, len(segmentNames))
+	nonExisting := make([]string, 0, len(segmentNames))
+	for _, v := range segmentNames {
+		s, err := r.SegmentDb.GetByName(v)
+		if err == nil {
+			existing = append(existing, s.GetId())
+			continue
+		}
+		switch err.(type) {
+		case db.ErrObjNotFound:
+			nonExisting = append(nonExisting, v)
+		default:
+			return nil, nil
+		}
+	}
+	return nonExisting, existing
 }

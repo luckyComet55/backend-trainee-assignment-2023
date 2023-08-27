@@ -24,7 +24,7 @@ type ErrUniqueConstraintFailed struct {
 }
 
 func (e ErrUniqueConstraintFailed) Error() string {
-	return fmt.Sprintf("broke contstraint with field %s value %s\n", e.Field, e.Value)
+	return fmt.Sprintf("field(s) %s value(s) %s\n", e.Field, e.Value)
 }
 
 type ErrUnsupportedMethod struct {

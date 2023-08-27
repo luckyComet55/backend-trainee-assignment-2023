@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	db "github.com/luckyComet55/backend-trainee-assignment-2023/database"
 	sg "github.com/luckyComet55/backend-trainee-assignment-2023/segment"
 	usg "github.com/luckyComet55/backend-trainee-assignment-2023/usersegment"
 )
@@ -24,8 +25,8 @@ type userSegmentsResponseBody struct {
 
 type userModifyErrorResponse struct {
 	Message          string   `json:"message"`
-	SegmentsToRemove []string `json:"segments_add,omitempty"`
-	SegmentsToAdd    []string `json:"segments_remove,omitempty"`
+	SegmentsToRemove []string `json:"segments_remove,omitempty"`
+	SegmentsToAdd    []string `json:"segments_add,omitempty"`
 }
 
 func (u userSegmentsModifyBody) String() string {
@@ -92,29 +93,10 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 
 	// it must be like some kind of a transaction
 	// so if one value is incorrect, the others will be ignored
-	isOkRm, isOkAdd := true, true
-	removabe, addable := make([]int, 0, len(toRm)), make([]int, 0, len(toAdd))
-	unableToRm, unableToAdd := make([]string, 0, len(toRm)), make([]string, 0, len(toAdd))
+	unableToRm, removable := serviceRepo.CheckNonExistantSegments(toRm)
+	unableToAdd, addable := serviceRepo.CheckNonExistantSegments(toAdd)
 	var errorResponse userModifyErrorResponse = userModifyErrorResponse{}
-	for _, v := range toRm {
-		r, err := serviceRepo.SegmentDb.GetByName(v)
-		if err != nil {
-			unableToRm = append(unableToRm, v)
-			isOkRm = false
-		} else {
-			removabe = append(removabe, r.GetId())
-		}
-	}
-	for _, v := range toAdd {
-		r, err := serviceRepo.SegmentDb.GetByName(v)
-		if err != nil {
-			unableToAdd = append(unableToAdd, v)
-			isOkAdd = false
-		} else {
-			addable = append(addable, r.GetId())
-		}
-	}
-	if !(isOkAdd && isOkRm) {
+	if !(len(unableToAdd) == 0 && len(unableToRm) == 0) {
 		errorResponse.Message = "objects with these values were not found"
 		if len(unableToAdd) > 0 {
 			errorResponse.SegmentsToAdd = unableToAdd
@@ -126,7 +108,7 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, resp, 400)
 		return
 	}
-	for _, v := range removabe {
+	for _, v := range removable {
 		err := serviceRepo.UserSegmentDb.DeleteByUserIdWithSegmentId(userId, v)
 		if err != nil {
 			writeResponse(w, []byte("internal error"), 500)
@@ -137,7 +119,17 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 		userSegment := usg.NewUserSegment(userId, v)
 		err := serviceRepo.UserSegmentDb.CreateObject(userSegment)
 		if err != nil {
-			writeResponse(w, []byte("internal error"), 500)
+			var resp []byte
+			var statusCode int
+			switch err.(type) {
+			case db.ErrUniqueConstraintFailed:
+				resp = []byte("user already has such segments: " + err.Error())
+				statusCode = 400
+			default:
+				resp = []byte("internal error")
+				statusCode = 500
+			}
+			writeResponse(w, resp, statusCode)
 			return
 		}
 	}

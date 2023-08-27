@@ -1,6 +1,8 @@
 package usersegment
 
 import (
+	"fmt"
+
 	db "github.com/luckyComet55/backend-trainee-assignment-2023/database"
 )
 
@@ -45,6 +47,14 @@ func (d *UserSegmentMockDatabase) GetBySegmentId(id int) []UserSegment {
 func (d *UserSegmentMockDatabase) CreateObject(userSegment UserSegment) error {
 	if _, ok := d.storage[userSegment.GetId()]; ok {
 		return db.ErrObjAlreadyExists{Id: userSegment.GetId()}
+	}
+	for _, v := range d.storage {
+		if (v.segmentId == userSegment.segmentId) && (v.userId == userSegment.userId) {
+			return db.ErrUniqueConstraintFailed{
+				Field: "userId|segmentId",
+				Value: fmt.Sprintf("%d|%d", userSegment.userId, userSegment.segmentId),
+			}
+		}
 	}
 	d.storage[userSegment.GetId()] = userSegment
 	return nil
