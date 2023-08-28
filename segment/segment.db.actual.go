@@ -22,17 +22,16 @@ func NewSegmentActualDatabase(db ksql.DB) *SegmentActualDatabase {
 
 func (d *SegmentActualDatabase) GetObjectById(id int) (Segment, error) {
 	var res Segment
-	err := d.db.QueryOne(context.Background(), &res, "select * from segments where id=?", id)
+	err := d.db.QueryOne(context.Background(), &res, "select * from segments where id=$1", id)
 	if err != nil {
+		fmt.Println(err)
 		err = db_.ErrObjNotFound{}
 	}
 	return res, err
 }
 
 func (d *SegmentActualDatabase) CreateObject(s Segment) error {
-	query := fmt.Sprintf("insert into segments values('%d', '%s')", s.Id, s.Name)
-	fmt.Println(query)
-	_, err := d.db.Exec(context.Background(), query)
+	_, err := d.db.Exec(context.Background(), "insert into segments values($1, $2)", s.Id, s.Name)
 	if err != nil {
 		fmt.Println(err)
 		err = db_.ErrUniqueConstraintFailed{Field: "name", Value: s.Name}
@@ -43,14 +42,14 @@ func (d *SegmentActualDatabase) CreateObject(s Segment) error {
 func (d *SegmentActualDatabase) DeleteObject(s Segment) error {
 	err := d.db.Delete(context.Background(), d.table, &s)
 	if err != nil {
+		fmt.Println(err)
 		err = db_.ErrObjNotFound{}
 	}
 	return err
 }
 
 func (d *SegmentActualDatabase) DeleteByName(name string) error {
-	queryString := fmt.Sprintf("delete from segments where name='%s'", name)
-	_, err := d.db.Exec(context.Background(), queryString)
+	_, err := d.db.Exec(context.Background(), "delete from segments where name=$1", name)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -59,8 +58,9 @@ func (d *SegmentActualDatabase) DeleteByName(name string) error {
 
 func (d *SegmentActualDatabase) GetByName(name string) (Segment, error) {
 	var res Segment
-	err := d.db.QueryOne(context.Background(), &res, "select * from segments where name=?", name)
+	err := d.db.QueryOne(context.Background(), &res, "select * from segments where name=$1", name)
 	if err != nil {
+		fmt.Println(err)
 		err = db_.ErrObjNotFound{}
 	}
 	return res, err

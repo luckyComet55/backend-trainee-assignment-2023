@@ -27,7 +27,7 @@ func (d *UserSegmentMockDatabase) GetObjectById(id int) (UserSegment, error) {
 func (d *UserSegmentMockDatabase) GetByUserId(id int) []UserSegment {
 	res := make([]UserSegment, 0)
 	for _, v := range d.storage {
-		if v.userId == id {
+		if v.UserId == id {
 			res = append(res, v)
 		}
 	}
@@ -37,7 +37,7 @@ func (d *UserSegmentMockDatabase) GetByUserId(id int) []UserSegment {
 func (d *UserSegmentMockDatabase) GetBySegmentId(id int) []UserSegment {
 	res := make([]UserSegment, 0)
 	for _, v := range d.storage {
-		if v.segmentId == id {
+		if v.SegmentId == id {
 			res = append(res, v)
 		}
 	}
@@ -49,10 +49,10 @@ func (d *UserSegmentMockDatabase) CreateObject(userSegment UserSegment) error {
 		return db.ErrObjAlreadyExists{Id: userSegment.GetId()}
 	}
 	for _, v := range d.storage {
-		if (v.segmentId == userSegment.segmentId) && (v.userId == userSegment.userId) {
+		if (v.SegmentId == userSegment.SegmentId) && (v.UserId == userSegment.UserId) {
 			return db.ErrUniqueConstraintFailed{
-				Field: "userId|segmentId",
-				Value: fmt.Sprintf("%d|%d", userSegment.userId, userSegment.segmentId),
+				Field: "user_id&segment_id",
+				Value: fmt.Sprintf("%d&%d", userSegment.UserId, userSegment.SegmentId),
 			}
 		}
 	}
@@ -70,7 +70,7 @@ func (d *UserSegmentMockDatabase) DeleteObject(userSegment UserSegment) error {
 
 func (d *UserSegmentMockDatabase) DeleteByUserId(id int) error {
 	for k, v := range d.storage {
-		if v.userId == id {
+		if v.UserId == id {
 			delete(d.storage, k)
 		}
 	}
@@ -81,7 +81,7 @@ func (d *UserSegmentMockDatabase) DeleteByUserId(id int) error {
 
 func (d *UserSegmentMockDatabase) DeleteBySegmentId(id int) error {
 	for k, v := range d.storage {
-		if v.segmentId == id {
+		if v.SegmentId == id {
 			delete(d.storage, k)
 		}
 	}
@@ -92,7 +92,7 @@ func (d *UserSegmentMockDatabase) DeleteBySegmentId(id int) error {
 
 func (d *UserSegmentMockDatabase) DeleteByUserIdWithSegmentId(userId int, segmentId int) error {
 	for k, v := range d.storage {
-		if v.userId == userId && v.segmentId == segmentId {
+		if v.UserId == userId && v.SegmentId == segmentId {
 			delete(d.storage, k)
 			break
 		}

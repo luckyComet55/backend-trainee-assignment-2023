@@ -34,7 +34,7 @@ func initDatabaseConnection(ctx context.Context) (ksql.DB, error) {
 
 func initRepo(conn ksql.DB) {
 	var dbSegment *sg.SegmentActualDatabase = sg.NewSegmentActualDatabase(conn)
-	var dbUserSegment *ug.UserSegmentMockDatabase = ug.NewUserSegmentMockDatabase()
+	var dbUserSegment *ug.UserSegmentActualDatabase = ug.NewUserSegmentActualDatabase(conn)
 	serviceRepo = *repo.NewServiceMockRepository(dbSegment, dbUserSegment)
 }
 
