@@ -40,14 +40,6 @@ func (d *SegmentActualDatabase) CreateObject(s Segment) error {
 	return err
 }
 
-func (d *SegmentActualDatabase) UpdateObject(s Segment) error {
-	err := d.db.Patch(context.Background(), d.table, &s)
-	if err != nil {
-		err = db_.ErrObjNotFound{}
-	}
-	return err
-}
-
 func (d *SegmentActualDatabase) DeleteObject(s Segment) error {
 	err := d.db.Delete(context.Background(), d.table, &s)
 	if err != nil {

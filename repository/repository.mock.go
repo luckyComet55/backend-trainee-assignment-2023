@@ -22,11 +22,7 @@ func NewServiceMockRepository(userDb usr.UserDatabase, segmentDb sg.SegmentDatab
 }
 
 func (r *ServiceMockRepository) GetSegmentsByUserId(id int) ([]sg.Segment, error) {
-	user, err := r.UserDb.GetObjectById(id)
-	if err != nil {
-		return nil, err
-	}
-	usgs := r.UserSegmentDb.GetByUserId(user.GetId())
+	usgs := r.UserSegmentDb.GetByUserId(id)
 	res := make([]sg.Segment, 0)
 	for _, userSegment := range usgs {
 		if v, err := r.SegmentDb.GetObjectById(userSegment.GetSegmentId()); err != nil {
@@ -39,11 +35,7 @@ func (r *ServiceMockRepository) GetSegmentsByUserId(id int) ([]sg.Segment, error
 }
 
 func (r *ServiceMockRepository) GetUsersBySegmentId(id int) ([]usr.User, error) {
-	segment, err := r.SegmentDb.GetObjectById(id)
-	if err != nil {
-		return nil, err
-	}
-	usgs := r.UserSegmentDb.GetBySegmentId(segment.GetId())
+	usgs := r.UserSegmentDb.GetBySegmentId(id)
 	res := make([]usr.User, 0)
 	for _, userSegment := range usgs {
 		if v, err := r.UserDb.GetObjectById(userSegment.GetUserId()); err != nil {

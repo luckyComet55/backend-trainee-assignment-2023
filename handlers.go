@@ -81,10 +81,6 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 	toAdd := xorStringArrays(reqBody.SegmentsToAdd, reqBody.SegmentsToRemove)
 	toRm := xorStringArrays(reqBody.SegmentsToRemove, reqBody.SegmentsToAdd)
 	userId := reqBody.UserId
-	if _, err := serviceRepo.UserDb.GetObjectById(userId); err != nil {
-		writeResponse(w, []byte("user with provided id not found"), 400)
-		return
-	}
 
 	// it must be like some kind of a transaction
 	// so if one value is incorrect, the others will be ignored

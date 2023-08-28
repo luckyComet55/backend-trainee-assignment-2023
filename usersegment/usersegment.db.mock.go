@@ -60,14 +60,6 @@ func (d *UserSegmentMockDatabase) CreateObject(userSegment UserSegment) error {
 	return nil
 }
 
-func (d *UserSegmentMockDatabase) UpdateObject(userSegment UserSegment) error {
-	if _, ok := d.storage[userSegment.GetId()]; !ok {
-		return db.ErrObjNotFound{}
-	}
-	d.storage[userSegment.GetId()] = userSegment
-	return nil
-}
-
 func (d *UserSegmentMockDatabase) DeleteObject(userSegment UserSegment) error {
 	if _, ok := d.storage[userSegment.GetId()]; !ok {
 		return db.ErrObjNotFound{}

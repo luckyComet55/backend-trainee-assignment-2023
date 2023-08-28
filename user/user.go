@@ -3,7 +3,7 @@ package user
 var idCounter int = 0
 
 type User struct {
-	id int
+	id int `ksql:"id"`
 }
 
 func NewUser() User {
