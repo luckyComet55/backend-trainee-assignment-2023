@@ -3,19 +3,16 @@ package repository
 import (
 	db "github.com/luckyComet55/backend-trainee-assignment-2023/database"
 	sg "github.com/luckyComet55/backend-trainee-assignment-2023/segment"
-	usr "github.com/luckyComet55/backend-trainee-assignment-2023/user"
 	ug "github.com/luckyComet55/backend-trainee-assignment-2023/usersegment"
 )
 
 type ServiceMockRepository struct {
-	UserDb        usr.UserDatabase
 	SegmentDb     sg.SegmentDatabase
 	UserSegmentDb ug.UserSegmentDatabase
 }
 
-func NewServiceMockRepository(userDb usr.UserDatabase, segmentDb sg.SegmentDatabase, usgDb ug.UserSegmentDatabase) *ServiceMockRepository {
+func NewServiceMockRepository(segmentDb sg.SegmentDatabase, usgDb ug.UserSegmentDatabase) *ServiceMockRepository {
 	return &ServiceMockRepository{
-		UserDb:        userDb,
 		SegmentDb:     segmentDb,
 		UserSegmentDb: usgDb,
 	}
@@ -25,24 +22,17 @@ func (r *ServiceMockRepository) GetSegmentsByUserId(id int) ([]sg.Segment, error
 	usgs := r.UserSegmentDb.GetByUserId(id)
 	res := make([]sg.Segment, 0)
 	for _, userSegment := range usgs {
-		if v, err := r.SegmentDb.GetObjectById(userSegment.GetSegmentId()); err != nil {
-			return nil, err
-		} else {
-			res = append(res, v)
-		}
+		v, _ := r.SegmentDb.GetObjectById(userSegment.GetSegmentId())
+		res = append(res, v)
 	}
 	return res, nil
 }
 
-func (r *ServiceMockRepository) GetUsersBySegmentId(id int) ([]usr.User, error) {
+func (r *ServiceMockRepository) GetUserIdsBySegmentId(id int) ([]int, error) {
 	usgs := r.UserSegmentDb.GetBySegmentId(id)
-	res := make([]usr.User, 0)
+	res := make([]int, 0)
 	for _, userSegment := range usgs {
-		if v, err := r.UserDb.GetObjectById(userSegment.GetUserId()); err != nil {
-			return nil, err
-		} else {
-			res = append(res, v)
-		}
+		res = append(res, userSegment.GetUserId())
 	}
 	return res, nil
 }
