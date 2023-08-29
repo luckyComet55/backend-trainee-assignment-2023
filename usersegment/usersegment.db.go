@@ -7,8 +7,8 @@ import (
 type UserSegmentDatabase interface {
 	db.Database[UserSegment]
 	GetByUserId(int) []UserSegment
-	GetBySegmentId(int) []UserSegment
+	GetBySegmentName(string) []UserSegment
 	DeleteByUserId(int) error
-	DeleteBySegmentId(int) error
-	DeleteByUserIdWithSegmentId(int, int) error
+	DeleteBySegmentName(string) error
+	DeleteByUserIdWithSegmentName(int, string) error
 }

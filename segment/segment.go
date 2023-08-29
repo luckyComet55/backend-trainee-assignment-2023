@@ -1,25 +1,21 @@
 package segment
 
-var idCounter int = 0
-
 type Segment struct {
-	Id   int    `json:"-" ksql:"id"`
-	Name string `json:"name" ksql:"name"`
+	Name        string `json:"name" ksql:"name"`
+	AudienceCvg int    `json:"audience_cvg" ksql:"audience_cvg"`
 }
 
-func NewSegment(name string) Segment {
-	newId := idCounter
-	idCounter++
+func NewSegment(name string, audience_cvg int) Segment {
 	return Segment{
-		Id:   newId,
-		Name: name,
+		Name:        name,
+		AudienceCvg: audience_cvg,
 	}
-}
-
-func (s Segment) GetId() int {
-	return s.Id
 }
 
 func (s Segment) GetName() string {
 	return s.Name
+}
+
+func (s Segment) GetAudienceCvg() int {
+	return s.AudienceCvg
 }

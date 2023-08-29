@@ -31,7 +31,7 @@ func (d *SegmentActualDatabase) GetObjectById(id int) (Segment, error) {
 }
 
 func (d *SegmentActualDatabase) CreateObject(s Segment) error {
-	_, err := d.db.Exec(context.Background(), "insert into segments values($1, $2)", s.Id, s.Name)
+	_, err := d.db.Exec(context.Background(), "insert into segments(name, audience_cvg) values($1, $2)", s.Name, s.AudienceCvg)
 	if err != nil {
 		fmt.Println(err)
 		err = db_.ErrUniqueConstraintFailed{Field: "name", Value: s.Name}

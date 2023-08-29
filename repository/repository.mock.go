@@ -22,14 +22,14 @@ func (r *ServiceMockRepository) GetSegmentsByUserId(id int) ([]sg.Segment, error
 	usgs := r.UserSegmentDb.GetByUserId(id)
 	res := make([]sg.Segment, 0)
 	for _, userSegment := range usgs {
-		v, _ := r.SegmentDb.GetObjectById(userSegment.GetSegmentId())
+		v, _ := r.SegmentDb.GetByName(userSegment.GetSegmentName())
 		res = append(res, v)
 	}
 	return res, nil
 }
 
-func (r *ServiceMockRepository) GetUserIdsBySegmentId(id int) ([]int, error) {
-	usgs := r.UserSegmentDb.GetBySegmentId(id)
+func (r *ServiceMockRepository) GetUserIdsBySegmentName(name string) ([]int, error) {
+	usgs := r.UserSegmentDb.GetBySegmentName(name)
 	res := make([]int, 0)
 	for _, userSegment := range usgs {
 		res = append(res, userSegment.GetUserId())
@@ -37,13 +37,13 @@ func (r *ServiceMockRepository) GetUserIdsBySegmentId(id int) ([]int, error) {
 	return res, nil
 }
 
-func (r *ServiceMockRepository) CheckNonExistantSegments(segmentNames []string) ([]string, []int) {
-	existing := make([]int, 0, len(segmentNames))
+func (r *ServiceMockRepository) CheckNonExistantSegments(segmentNames []string) ([]string, []string) {
+	existing := make([]string, 0, len(segmentNames))
 	nonExisting := make([]string, 0, len(segmentNames))
 	for _, v := range segmentNames {
 		s, err := r.SegmentDb.GetByName(v)
 		if err == nil {
-			existing = append(existing, s.GetId())
+			existing = append(existing, s.GetName())
 			continue
 		}
 		switch err.(type) {

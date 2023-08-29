@@ -13,6 +13,10 @@ import (
 	usg "github.com/luckyComet55/backend-trainee-assignment-2023/usersegment"
 )
 
+type createSegmentBody struct {
+	AudienceCvg int `json:"audience_cvg"`
+}
+
 type userSegmentsModifyBody struct {
 	UserId           int      `json:"user_id"`
 	SegmentsToAdd    []string `json:"segments_add"`
@@ -38,11 +42,22 @@ func helloRootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
+	var reqBody createSegmentBody
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&reqBody); err != nil {
+		writeResponse(w, []byte("incorrrect body format"), 400)
+		return
+	}
+	if reqBody.AudienceCvg < 0 || reqBody.AudienceCvg > 100 {
+		writeResponse(w, []byte("audience_cvg must be in [0, 100] integers"), 400)
+		return
+	}
 	segmentName := chi.URLParam(r, "segmentName")
 	res := "OK"
 	logStatus := "SUCCESS"
 	statusCode := 200
-	segment := sg.NewSegment(segmentName)
+	segment := sg.NewSegment(segmentName, reqBody.AudienceCvg)
 	fmt.Println(segment)
 	if err := serviceRepo.SegmentDb.CreateObject(segment); err != nil {
 		res = err.Error()
@@ -100,7 +115,7 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, v := range removable {
-		err := serviceRepo.UserSegmentDb.DeleteByUserIdWithSegmentId(userId, v)
+		err := serviceRepo.UserSegmentDb.DeleteByUserIdWithSegmentName(userId, v)
 		if err != nil {
 			writeResponse(w, []byte("internal error"), 500)
 			return

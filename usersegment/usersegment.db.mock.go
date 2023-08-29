@@ -34,10 +34,10 @@ func (d *UserSegmentMockDatabase) GetByUserId(id int) []UserSegment {
 	return res
 }
 
-func (d *UserSegmentMockDatabase) GetBySegmentId(id int) []UserSegment {
+func (d *UserSegmentMockDatabase) GetBySegmentName(name string) []UserSegment {
 	res := make([]UserSegment, 0)
 	for _, v := range d.storage {
-		if v.SegmentId == id {
+		if v.SegmentName == name {
 			res = append(res, v)
 		}
 	}
@@ -49,10 +49,10 @@ func (d *UserSegmentMockDatabase) CreateObject(userSegment UserSegment) error {
 		return db.ErrObjAlreadyExists{Id: userSegment.GetId()}
 	}
 	for _, v := range d.storage {
-		if (v.SegmentId == userSegment.SegmentId) && (v.UserId == userSegment.UserId) {
+		if (v.SegmentName == userSegment.SegmentName) && (v.UserId == userSegment.UserId) {
 			return db.ErrUniqueConstraintFailed{
-				Field: "user_id&segment_id",
-				Value: fmt.Sprintf("%d&%d", userSegment.UserId, userSegment.SegmentId),
+				Field: "user_id&segment_name",
+				Value: fmt.Sprintf("%d&%s", userSegment.UserId, userSegment.SegmentName),
 			}
 		}
 	}
@@ -79,9 +79,9 @@ func (d *UserSegmentMockDatabase) DeleteByUserId(id int) error {
 	return nil
 }
 
-func (d *UserSegmentMockDatabase) DeleteBySegmentId(id int) error {
+func (d *UserSegmentMockDatabase) DeleteBySegmentName(name string) error {
 	for k, v := range d.storage {
-		if v.SegmentId == id {
+		if v.SegmentName == name {
 			delete(d.storage, k)
 		}
 	}
@@ -90,9 +90,9 @@ func (d *UserSegmentMockDatabase) DeleteBySegmentId(id int) error {
 	return nil
 }
 
-func (d *UserSegmentMockDatabase) DeleteByUserIdWithSegmentId(userId int, segmentId int) error {
+func (d *UserSegmentMockDatabase) DeleteByUserIdWithSegmentName(userId int, segmentName string) error {
 	for k, v := range d.storage {
-		if v.UserId == userId && v.SegmentId == segmentId {
+		if v.UserId == userId && v.SegmentName == segmentName {
 			delete(d.storage, k)
 			break
 		}

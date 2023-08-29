@@ -5,65 +5,41 @@ import (
 )
 
 type SegmentMockDatabase struct {
-	storage     map[int]Segment
-	uniqueNames []string
+	storage map[string]Segment
 }
 
 func NewSegmentMockDatabase() *SegmentMockDatabase {
 	return &SegmentMockDatabase{
-		storage:     make(map[int]Segment),
-		uniqueNames: make([]string, 0, 100),
+		storage: make(map[string]Segment),
 	}
 }
 
 func (d *SegmentMockDatabase) GetObjectById(id int) (Segment, error) {
-	if v, ok := d.storage[id]; !ok {
+	return Segment{}, db.ErrUnsupportedMethod{}
+}
+
+func (d *SegmentMockDatabase) GetByName(name string) (Segment, error) {
+	if v, ok := d.storage[name]; !ok {
 		return v, db.ErrObjNotFound{}
 	} else {
 		return v, nil
 	}
 }
 
-func (d *SegmentMockDatabase) GetByName(name string) (Segment, error) {
-	for _, v := range d.storage {
-		if name == v.GetName() {
-			return v, nil
-		}
-	}
-	return Segment{}, db.ErrObjNotFound{}
-}
-
 func (d *SegmentMockDatabase) CreateObject(s Segment) error {
-	if _, ok := d.storage[s.GetId()]; ok {
-		return db.ErrObjAlreadyExists{Id: s.GetId()}
+	if _, ok := d.storage[s.Name]; ok {
+		return db.ErrUniqueConstraintFailed{Field: "name", Value: s.Name}
 	}
-	for _, n := range d.uniqueNames {
-		if n == s.GetName() {
-			return db.ErrUniqueConstraintFailed{
-				Field: "name",
-				Value: s.GetName(),
-			}
-		}
-	}
-	d.storage[s.GetId()] = s
-	d.uniqueNames = append(d.uniqueNames, s.GetName())
+	d.storage[s.Name] = s
 	return nil
 }
 
 func (d *SegmentMockDatabase) DeleteObject(s Segment) error {
-	if _, ok := d.storage[s.GetId()]; !ok {
-		return db.ErrObjNotFound{}
-	}
-	delete(d.storage, s.GetId())
+	delete(d.storage, s.Name)
 	return nil
 }
 
 func (d *SegmentMockDatabase) DeleteByName(name string) error {
-	for k, v := range d.storage {
-		if v.Name == name {
-			delete(d.storage, k)
-			break
-		}
-	}
+	delete(d.storage, name)
 	return nil
 }
