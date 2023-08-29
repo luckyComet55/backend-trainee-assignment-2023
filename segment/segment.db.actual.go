@@ -20,16 +20,6 @@ func NewSegmentActualDatabase(db ksql.DB) *SegmentActualDatabase {
 	}
 }
 
-func (d *SegmentActualDatabase) GetObjectById(id int) (Segment, error) {
-	var res Segment
-	err := d.db.QueryOne(context.Background(), &res, "select * from segments where id=$1", id)
-	if err != nil {
-		fmt.Println(err)
-		err = db_.ErrObjNotFound{}
-	}
-	return res, err
-}
-
 func (d *SegmentActualDatabase) CreateObject(s Segment) error {
 	_, err := d.db.Exec(context.Background(), "insert into segments(name, audience_cvg) values($1, $2)", s.Name, s.AudienceCvg)
 	if err != nil {

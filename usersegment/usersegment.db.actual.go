@@ -20,10 +20,6 @@ func NewUserSegmentActualDatabase(db ksql.DB) *UserSegmentActualDatabase {
 	}
 }
 
-func (d *UserSegmentActualDatabase) GetObjectById(id int) (UserSegment, error) {
-	return UserSegment{}, db_.ErrUnsupportedMethod{}
-}
-
 func (d *UserSegmentActualDatabase) CreateObject(s UserSegment) error {
 	_, err := d.db.Exec(context.Background(), "insert into user_segments(user_id, segment_name) values($1, $2)", s.UserId, s.SegmentName)
 	if err != nil {

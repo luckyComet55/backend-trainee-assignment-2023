@@ -26,10 +26,3 @@ type ErrUniqueConstraintFailed struct {
 func (e ErrUniqueConstraintFailed) Error() string {
 	return fmt.Sprintf("field(s) %s value(s) %s\n", e.Field, e.Value)
 }
-
-type ErrUnsupportedMethod struct {
-}
-
-func (e ErrUnsupportedMethod) Error() string {
-	return "method is unsupported on object, User has no name"
-}

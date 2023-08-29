@@ -16,10 +16,6 @@ func NewUserSegmentMockDatabase() *UserSegmentMockDatabase {
 	}
 }
 
-func (d *UserSegmentMockDatabase) GetObjectById(id int) (UserSegment, error) {
-	return UserSegment{}, db.ErrUnsupportedMethod{}
-}
-
 func (d *UserSegmentMockDatabase) GetByUserId(id int) []UserSegment {
 	res := make([]UserSegment, 0)
 	for _, v := range d.storage {

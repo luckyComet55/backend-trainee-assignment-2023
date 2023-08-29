@@ -14,10 +14,6 @@ func NewSegmentMockDatabase() *SegmentMockDatabase {
 	}
 }
 
-func (d *SegmentMockDatabase) GetObjectById(id int) (Segment, error) {
-	return Segment{}, db.ErrUnsupportedMethod{}
-}
-
 func (d *SegmentMockDatabase) GetByName(name string) (Segment, error) {
 	if v, ok := d.storage[name]; !ok {
 		return v, db.ErrObjNotFound{}
