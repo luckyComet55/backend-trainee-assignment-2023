@@ -115,7 +115,7 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, v := range removable {
-		err := serviceRepo.UserSegmentDb.DeleteByUserIdWithSegmentName(userId, v)
+		err := serviceRepo.UserSegmentDb.SetUserSegmentInactive(userId, v)
 		if err != nil {
 			writeResponse(w, []byte("internal error"), 500)
 			return
@@ -144,35 +144,24 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 
 func getUserSegments(w http.ResponseWriter, r *http.Request) {
 	userIdStr := chi.URLParam(r, "userId")
-	var res []byte
-	statusCode := 200
 	userSegments := userSegmentsResponseBody{Segments: make([]string, 0)}
-	logStatus := "SUCCESS"
 
 	// we ignore error, returned by atoi
 	// because our router checks if the
 	// value contains digits only
 	userId, _ := strconv.Atoi(userIdStr)
-	arr, err := serviceRepo.GetSegmentsByUserId(userId)
-	if err != nil {
-		res = []byte("user not found")
-		statusCode = 404
-		logStatus = "DENIED --> No such user"
-	} else {
-		for _, v := range arr {
-			userSegments.Segments = append(userSegments.Segments, v.Name)
-		}
-		res, err = json.Marshal(userSegments)
-		if err != nil {
-			res = []byte("Internal error")
-			statusCode = 500
-			logStatus = "DENIED --> Marshalling error"
-		}
+	segmentNames := serviceRepo.GetUserActiveSegments(userId)
+	if segmentNames == nil {
+		writeResponse(w, []byte("user not found"), 404)
+		return
 	}
-	fmt.Printf("%s %s ==> get user %d segments %v | %s\n", r.Method, r.URL.Path, userId, userSegments.Segments, logStatus)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	w.Write(res)
+	userSegments.Segments = segmentNames
+	res, err := json.Marshal(userSegments)
+	if err != nil {
+		writeResponse(w, []byte("internal error"), 500)
+		return
+	}
+	writeResponse(w, res, 200)
 }
 
 func xorStringArrays(a, b []string) []string {

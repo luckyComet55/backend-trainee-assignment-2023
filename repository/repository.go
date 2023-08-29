@@ -7,5 +7,6 @@ import (
 type ServiceRepository interface {
 	GetUserIdsBySegmentName(string) ([]int, error)
 	GetSegmentsByUserId(int) ([]sg.Segment, error)
-	CheckNonExistantSegments([]string) ([]string, []int)
+	GetUserActiveSegments(int) ([]string, error)
+	CheckNonExistantSegments([]string) ([]string, []string)
 }

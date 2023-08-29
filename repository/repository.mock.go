@@ -55,3 +55,16 @@ func (r *ServiceMockRepository) CheckNonExistantSegments(segmentNames []string) 
 	}
 	return nonExisting, existing
 }
+
+func (r *ServiceMockRepository) GetUserActiveSegments(user_id int) []string {
+	var names []string
+	res := r.UserSegmentDb.GetUserActiveSegments(user_id)
+	if res == nil {
+		return nil
+	}
+	names = make([]string, 0, len(res))
+	for _, v := range res {
+		names = append(names, v.GetName())
+	}
+	return names
+}
