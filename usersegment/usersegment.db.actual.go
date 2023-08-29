@@ -109,7 +109,7 @@ func (d *UserSegmentActualDatabase) DeleteByUserIdWithSegmentName(user_id int, s
 }
 
 func (d *UserSegmentActualDatabase) SetUserSegmentInactive(user_id int, segment_name string) error {
-	_, err := d.db.Exec(context.Background(), "update table user_segments set removed_at=now(), is_active='false' where user_id=$1 and segment_name=$2", user_id, segment_name)
+	_, err := d.db.Exec(context.Background(), "update user_segments set removed_at=now(), is_active='false' where user_id=$1 and segment_name=$2", user_id, segment_name)
 	if err != nil {
 		fmt.Println(err)
 	}
