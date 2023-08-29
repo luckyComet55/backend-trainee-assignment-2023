@@ -21,12 +21,7 @@ func NewUserSegmentActualDatabase(db ksql.DB) *UserSegmentActualDatabase {
 }
 
 func (d *UserSegmentActualDatabase) GetObjectById(id int) (UserSegment, error) {
-	var res UserSegment
-	err := d.db.QueryOne(context.Background(), &res, "select * from user_segments where id=$1", id)
-	if err != nil {
-		err = db_.ErrObjNotFound{}
-	}
-	return res, err
+	return UserSegment{}, db_.ErrUnsupportedMethod{}
 }
 
 func (d *UserSegmentActualDatabase) CreateObject(s UserSegment) error {

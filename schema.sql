@@ -9,10 +9,9 @@ create table if not exists users(
 );
 
 create table if not exists user_segments(
-    id int generated always as identity,
     user_id int,
     segment_name varchar,
-    primary key(id),
+    primary key(user_id, segment_name),
     constraint fk_segment
         foreign key(segment_name)
         references segments(name)

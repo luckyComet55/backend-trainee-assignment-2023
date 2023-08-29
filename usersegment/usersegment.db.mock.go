@@ -7,21 +7,17 @@ import (
 )
 
 type UserSegmentMockDatabase struct {
-	storage map[int]UserSegment
+	storage map[string]UserSegment
 }
 
 func NewUserSegmentMockDatabase() *UserSegmentMockDatabase {
 	return &UserSegmentMockDatabase{
-		storage: make(map[int]UserSegment),
+		storage: make(map[string]UserSegment),
 	}
 }
 
 func (d *UserSegmentMockDatabase) GetObjectById(id int) (UserSegment, error) {
-	if v, ok := d.storage[id]; !ok {
-		return v, db.ErrObjNotFound{}
-	} else {
-		return v, nil
-	}
+	return UserSegment{}, db.ErrUnsupportedMethod{}
 }
 
 func (d *UserSegmentMockDatabase) GetByUserId(id int) []UserSegment {
@@ -45,9 +41,6 @@ func (d *UserSegmentMockDatabase) GetBySegmentName(name string) []UserSegment {
 }
 
 func (d *UserSegmentMockDatabase) CreateObject(userSegment UserSegment) error {
-	if _, ok := d.storage[userSegment.GetId()]; ok {
-		return db.ErrObjAlreadyExists{Id: userSegment.GetId()}
-	}
 	for _, v := range d.storage {
 		if (v.SegmentName == userSegment.SegmentName) && (v.UserId == userSegment.UserId) {
 			return db.ErrUniqueConstraintFailed{
@@ -56,15 +49,15 @@ func (d *UserSegmentMockDatabase) CreateObject(userSegment UserSegment) error {
 			}
 		}
 	}
-	d.storage[userSegment.GetId()] = userSegment
+	d.storage[fmt.Sprintf("%d+%s", userSegment.UserId, userSegment.SegmentName)] = userSegment
 	return nil
 }
 
 func (d *UserSegmentMockDatabase) DeleteObject(userSegment UserSegment) error {
-	if _, ok := d.storage[userSegment.GetId()]; !ok {
+	if _, ok := d.storage[fmt.Sprintf("%d+%s", userSegment.UserId, userSegment.SegmentName)]; !ok {
 		return db.ErrObjNotFound{}
 	}
-	delete(d.storage, userSegment.GetId())
+	delete(d.storage, fmt.Sprintf("%d+%s", userSegment.UserId, userSegment.SegmentName))
 	return nil
 }
 
