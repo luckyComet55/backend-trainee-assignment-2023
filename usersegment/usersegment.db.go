@@ -9,7 +9,7 @@ type UserSegmentDatabase interface {
 	GetByUserId(int) []UserSegment
 	GetBySegmentName(string) []UserSegment
 	GetUserActiveSegments(int) []UserSegment
-	GetUserSegmentsInPeriod(int, int, int) []UserSegment
+	GetUserSegmentActionsInPeriod(int, int, int) []UserSegmentActions
 	DeleteByUserId(int) error
 	DeleteBySegmentName(string) error
 	SetUserSegmentInactive(int, string) error

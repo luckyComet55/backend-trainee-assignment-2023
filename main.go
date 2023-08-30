@@ -45,7 +45,10 @@ func main() {
 	godotenv.Load()
 	conn, err := initDatabaseConnection(ctx)
 	if err != nil {
-		os.Exit(1)
+		log.Fatal(err)
+	}
+	if err = os.Mkdir("data", os.ModeDir); err != nil && !os.IsExist(err) {
+		log.Fatal(err)
 	}
 	defer conn.Close()
 	initRepo(conn)
@@ -58,6 +61,7 @@ func main() {
 	r.Put("/modify-user-segments", modifyUserSegments)
 	r.Get("/{userId:[0-9]+}", getUserSegments)
 	r.Get("/{userId:[0-9]+}/{year:[0-9]+}/{month:[0-9]+}", getUserSegmentsInPeriod)
+	r.Get("/user-report/{filename}", downloadUserReport)
 
 	log.Fatal(http.ListenAndServe(":"+*port, r))
 }

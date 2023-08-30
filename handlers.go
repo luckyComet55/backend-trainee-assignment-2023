@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -169,7 +170,6 @@ func getUserSegmentsInPeriod(w http.ResponseWriter, r *http.Request) {
 	userId, _ := strconv.Atoi(chi.URLParam(r, "userId"))
 	year, _ := strconv.Atoi(chi.URLParam(r, "year"))
 	month, _ := strconv.Atoi(chi.URLParam(r, "month"))
-	userSegments := userSegmentsResponseBody{}
 
 	currentYear := time.Now().Year()
 	currentMonth := getMonthNumber(time.Now().Month().String())
@@ -181,21 +181,36 @@ func getUserSegmentsInPeriod(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, []byte("date %d/%d is in very past - cannot calculate"), 400)
 		return
 	}
-	segments := serviceRepo.UserSegmentDb.GetUserSegmentsInPeriod(userId, year, month)
+	segments := serviceRepo.UserSegmentDb.GetUserSegmentActionsInPeriod(userId, year, month)
 	if segments == nil {
 		writeResponse(w, []byte("user not found"), 404)
 		return
 	}
-	userSegments.Segments = make([]string, 0, len(segments))
-	for _, v := range segments {
-		userSegments.Segments = append(userSegments.Segments, v.GetSegmentName())
-	}
-	res, err := json.Marshal(userSegments)
+	filename, err := createUserReport(segments)
 	if err != nil {
 		writeResponse(w, []byte("internal error"), 500)
 		return
 	}
-	writeResponse(w, res, 200)
+	writeResponse(w, []byte(fmt.Sprintf("http://127.0.0.1:3003/user-report/%s", filename)), 200)
+}
+
+func downloadUserReport(w http.ResponseWriter, r *http.Request) {
+	filename := chi.URLParam(r, "filename")
+	filepath := fmt.Sprintf("./data/%s.csv", filename)
+	file, err := os.Open(filepath)
+	if err != nil && !os.IsNotExist(err) {
+		writeResponse(w, []byte("internal error"), 500)
+		return
+	} else if err != nil && os.IsNotExist(err) {
+		writeResponse(w, []byte("user report does not exist"), 404)
+		return
+	}
+	w.Header().Set("Content-Disposition", "attachment; filename="+filename+".csv")
+	http.ServeFile(w, r, filepath)
+	file.Close()
+	if err = os.Remove(filepath); err != nil {
+		fmt.Println(err)
+	}
 }
 
 func getMonthNumber(month string) int {

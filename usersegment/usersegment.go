@@ -1,9 +1,20 @@
 package usersegment
 
+import (
+	"time"
+)
+
 type UserSegment struct {
 	UserId      int    `ksql:"user_id"`
 	SegmentName string `ksql:"segment_name"`
 	IsActive    bool   `ksql:"is_active"`
+}
+
+type UserSegmentActions struct {
+	UserId        int       `ksql:"user_id"`
+	SegmentName   string    `ksql:"segment_name"`
+	Date          time.Time `ksql:"date"`
+	OperationType string    `ksql:"operation"`
 }
 
 func NewUserSegment(userId int, segmentName string) UserSegment {

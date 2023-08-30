@@ -69,13 +69,13 @@ func (d *UserSegmentActualDatabase) GetUserActiveSegments(id int) []UserSegment 
 	return res
 }
 
-func (d *UserSegmentActualDatabase) GetUserSegmentsInPeriod(userId, year, month int) []UserSegment {
-	res := make([]UserSegment, 0)
+func (d *UserSegmentActualDatabase) GetUserSegmentActionsInPeriod(userId, year, month int) []UserSegmentActions {
+	res := make([]UserSegmentActions, 0)
 	err := d.db.Query(
 		context.Background(),
 		&res,
 		`select
-			*
+			user_id, segment_name, added_at as date, 'added' as operation
 		from
 			user_segments
 		where
@@ -84,10 +84,18 @@ func (d *UserSegmentActualDatabase) GetUserSegmentsInPeriod(userId, year, month 
 			extract(year from added_at)=$1
 		and
 			extract(month from added_at)=$2
-		or
+		union all
+		select
+			user_id, segment_name, removed_at as date, 'removed' as operation
+		from
+			user_segments
+		where
+			user_id=$3
+		and
 			extract(year from removed_at)=$1
 		and
-			extract(month from removed_at)=$2`,
+			extract(month from removed_at)=$2
+			`,
 		year,
 		month,
 		userId,
