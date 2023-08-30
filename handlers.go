@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -144,7 +145,7 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 
 func getUserSegments(w http.ResponseWriter, r *http.Request) {
 	userIdStr := chi.URLParam(r, "userId")
-	userSegments := userSegmentsResponseBody{Segments: make([]string, 0)}
+	userSegments := userSegmentsResponseBody{}
 
 	// we ignore error, returned by atoi
 	// because our router checks if the
@@ -162,6 +163,70 @@ func getUserSegments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeResponse(w, res, 200)
+}
+
+func getUserSegmentsInPeriod(w http.ResponseWriter, r *http.Request) {
+	userId, _ := strconv.Atoi(chi.URLParam(r, "userId"))
+	year, _ := strconv.Atoi(chi.URLParam(r, "year"))
+	month, _ := strconv.Atoi(chi.URLParam(r, "month"))
+	userSegments := userSegmentsResponseBody{}
+
+	currentYear := time.Now().Year()
+	currentMonth := getMonthNumber(time.Now().Month().String())
+	if currentYear < year || currentYear == year && currentMonth < month {
+		writeResponse(w, []byte("date %d/%d is in future - cannot calculate"), 400)
+		return
+	}
+	if year <= 1970 {
+		writeResponse(w, []byte("date %d/%d is in very past - cannot calculate"), 400)
+		return
+	}
+	segments := serviceRepo.UserSegmentDb.GetUserSegmentsInPeriod(userId, year, month)
+	if segments == nil {
+		writeResponse(w, []byte("user not found"), 404)
+		return
+	}
+	userSegments.Segments = make([]string, 0, len(segments))
+	for _, v := range segments {
+		userSegments.Segments = append(userSegments.Segments, v.GetSegmentName())
+	}
+	res, err := json.Marshal(userSegments)
+	if err != nil {
+		writeResponse(w, []byte("internal error"), 500)
+		return
+	}
+	writeResponse(w, res, 200)
+}
+
+func getMonthNumber(month string) int {
+	switch month {
+	case "January":
+		return 1
+	case "February":
+		return 2
+	case "March":
+		return 3
+	case "April":
+		return 4
+	case "May":
+		return 5
+	case "June":
+		return 6
+	case "July":
+		return 7
+	case "August":
+		return 8
+	case "September":
+		return 9
+	case "October":
+		return 10
+	case "November":
+		return 11
+	case "December":
+		return 12
+	default:
+		return -1
+	}
 }
 
 func xorStringArrays(a, b []string) []string {

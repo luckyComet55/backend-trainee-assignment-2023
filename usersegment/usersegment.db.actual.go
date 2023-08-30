@@ -69,6 +69,36 @@ func (d *UserSegmentActualDatabase) GetUserActiveSegments(id int) []UserSegment 
 	return res
 }
 
+func (d *UserSegmentActualDatabase) GetUserSegmentsInPeriod(userId, year, month int) []UserSegment {
+	res := make([]UserSegment, 0)
+	err := d.db.Query(
+		context.Background(),
+		&res,
+		`select
+			*
+		from
+			user_segments
+		where
+			user_id=$3
+		and
+			extract(year from added_at)=$1
+		and
+			extract(month from added_at)=$2
+		or
+			extract(year from removed_at)=$1
+		and
+			extract(month from removed_at)=$2`,
+		year,
+		month,
+		userId,
+	)
+	if err != nil {
+		fmt.Println(err)
+		res = nil
+	}
+	return res
+}
+
 func (d *UserSegmentActualDatabase) GetBySegmentName(name string) []UserSegment {
 	res := make([]UserSegment, 0)
 	err := d.db.Query(context.Background(), &res, "select * from user_segments where segment_name=$1", name)

@@ -57,6 +57,7 @@ func main() {
 	r.Delete("/{segmentName}", deleteSegmentHandler)
 	r.Put("/modify-user-segments", modifyUserSegments)
 	r.Get("/{userId:[0-9]+}", getUserSegments)
+	r.Get("/{userId:[0-9]+}/{year:[0-9]+}/{month:[0-9]+}", getUserSegmentsInPeriod)
 
 	log.Fatal(http.ListenAndServe(":"+*port, r))
 }
