@@ -26,3 +26,10 @@ type ErrUniqueConstraintFailed struct {
 func (e ErrUniqueConstraintFailed) Error() string {
 	return fmt.Sprintf("field(s) %s value(s) %s\n", e.Field, e.Value)
 }
+
+type ErrInternal struct {
+}
+
+func (e ErrInternal) Error() string {
+	return "internal error"
+}

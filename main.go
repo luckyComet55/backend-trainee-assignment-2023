@@ -12,6 +12,7 @@ import (
 	"github.com/joho/godotenv"
 	repo "github.com/luckyComet55/backend-trainee-assignment-2023/repository"
 	sg "github.com/luckyComet55/backend-trainee-assignment-2023/segment"
+	u "github.com/luckyComet55/backend-trainee-assignment-2023/user"
 	ug "github.com/luckyComet55/backend-trainee-assignment-2023/usersegment"
 	"github.com/vingarcia/ksql"
 	"github.com/vingarcia/ksql/adapters/kpgx"
@@ -35,7 +36,8 @@ func initDatabaseConnection(ctx context.Context) (ksql.DB, error) {
 func initRepo(conn ksql.DB) {
 	var dbSegment *sg.SegmentActualDatabase = sg.NewSegmentActualDatabase(conn)
 	var dbUserSegment *ug.UserSegmentActualDatabase = ug.NewUserSegmentActualDatabase(conn)
-	serviceRepo = *repo.NewServiceMockRepository(dbSegment, dbUserSegment)
+	var dbUser *u.UserActualDatabase = u.NewUserActualDatabase(conn)
+	serviceRepo = *repo.NewServiceMockRepository(dbSegment, dbUserSegment, dbUser)
 }
 
 var serviceRepo repo.ServiceMockRepository

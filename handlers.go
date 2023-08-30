@@ -48,7 +48,7 @@ func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&reqBody); err != nil {
-		writeResponse(w, []byte("incorrrect body format"), 400)
+		writeResponse(w, []byte("incorrect body format"), 400)
 		return
 	}
 	if reqBody.AudienceCvg < 0 || reqBody.AudienceCvg > 100 {
@@ -56,19 +56,22 @@ func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	segmentName := chi.URLParam(r, "segmentName")
-	res := "OK"
-	logStatus := "SUCCESS"
-	statusCode := 200
 	segment := sg.NewSegment(segmentName, reqBody.AudienceCvg)
-	fmt.Println(segment)
 	if err := serviceRepo.SegmentDb.CreateObject(segment); err != nil {
-		res = err.Error()
-		statusCode = 400
-		logStatus = "DENIED"
+		switch err.(type) {
+		case db.ErrInternal:
+			writeResponse(w, []byte("internal error"), 500)
+			return
+		default:
+			writeResponse(w, []byte("segment with such name already exists"), 400)
+			return
+		}
 	}
-	fmt.Printf("%s %s ==> create segment %s | %s\n", r.Method, r.URL.Path, segmentName, logStatus)
-	w.WriteHeader(statusCode)
-	fmt.Fprintln(w, res)
+	if err := serviceRepo.SetRandomSegmentAuditory(segment); err != nil {
+		writeResponse(w, []byte("internal error"), 500)
+		return
+	}
+	writeResponse(w, []byte("OK"), 200)
 }
 
 func deleteSegmentHandler(w http.ResponseWriter, r *http.Request) {

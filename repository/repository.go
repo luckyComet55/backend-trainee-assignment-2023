@@ -9,4 +9,5 @@ type ServiceRepository interface {
 	GetSegmentsByUserId(int) ([]sg.Segment, error)
 	GetUserActiveSegments(int) ([]string, error)
 	CheckNonExistantSegments([]string) ([]string, []string)
+	SetRandomSegmentAuditory(sg.Segment) error
 }

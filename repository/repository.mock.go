@@ -1,20 +1,25 @@
 package repository
 
 import (
+	"fmt"
+
 	db "github.com/luckyComet55/backend-trainee-assignment-2023/database"
 	sg "github.com/luckyComet55/backend-trainee-assignment-2023/segment"
+	u "github.com/luckyComet55/backend-trainee-assignment-2023/user"
 	ug "github.com/luckyComet55/backend-trainee-assignment-2023/usersegment"
 )
 
 type ServiceMockRepository struct {
 	SegmentDb     sg.SegmentDatabase
 	UserSegmentDb ug.UserSegmentDatabase
+	UserDb        u.UserDatabase
 }
 
-func NewServiceMockRepository(segmentDb sg.SegmentDatabase, usgDb ug.UserSegmentDatabase) *ServiceMockRepository {
+func NewServiceMockRepository(segmentDb sg.SegmentDatabase, usgDb ug.UserSegmentDatabase, userDb u.UserDatabase) *ServiceMockRepository {
 	return &ServiceMockRepository{
 		SegmentDb:     segmentDb,
 		UserSegmentDb: usgDb,
+		UserDb:        userDb,
 	}
 }
 
@@ -67,4 +72,19 @@ func (r *ServiceMockRepository) GetUserActiveSegments(user_id int) []string {
 		names = append(names, v.GetSegmentName())
 	}
 	return names
+}
+
+func (r *ServiceMockRepository) SetRandomSegmentAuditory(s sg.Segment) error {
+	users := r.UserDb.GetRandomUsersByPercent(s.GetAudienceCvg())
+	if users == nil {
+		return db.ErrInternal{}
+	}
+	for _, user := range users {
+		userSegment := ug.NewUserSegment(user.Id, s.Name)
+		if err := r.UserSegmentDb.CreateObject(userSegment); err != nil {
+			fmt.Println(err)
+			return db.ErrInternal{}
+		}
+	}
+	return nil
 }
