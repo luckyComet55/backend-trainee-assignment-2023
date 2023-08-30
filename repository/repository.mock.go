@@ -64,7 +64,7 @@ func (r *ServiceMockRepository) GetUserActiveSegments(user_id int) []string {
 	}
 	names = make([]string, 0, len(res))
 	for _, v := range res {
-		names = append(names, v.GetName())
+		names = append(names, v.GetSegmentName())
 	}
 	return names
 }

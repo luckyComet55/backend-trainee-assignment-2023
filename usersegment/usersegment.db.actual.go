@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	db_ "github.com/luckyComet55/backend-trainee-assignment-2023/database"
-	sg "github.com/luckyComet55/backend-trainee-assignment-2023/segment"
 	"github.com/vingarcia/ksql"
 )
 
@@ -48,19 +47,15 @@ func (d *UserSegmentActualDatabase) GetByUserId(id int) []UserSegment {
 	return res
 }
 
-func (d *UserSegmentActualDatabase) GetUserActiveSegments(id int) []sg.Segment {
-	res := make([]sg.Segment, 0)
+func (d *UserSegmentActualDatabase) GetUserActiveSegments(id int) []UserSegment {
+	res := make([]UserSegment, 0)
 	err := d.db.Query(
 		context.Background(),
 		&res,
 		`select
-			name, audience_cvg, is_active
+			*
 		from
-			segments
-		inner join
 			user_segments
-		on
-			segments.name = user_segments.segment_name
 		where
 			user_segments.user_id=$1
 		and
@@ -94,14 +89,6 @@ func (d *UserSegmentActualDatabase) DeleteByUserId(id int) error {
 
 func (d *UserSegmentActualDatabase) DeleteBySegmentName(name string) error {
 	_, err := d.db.Exec(context.Background(), "delete from user_segments where segment_name=$1", name)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return err
-}
-
-func (d *UserSegmentActualDatabase) DeleteByUserIdWithSegmentName(user_id int, segement_name string) error {
-	_, err := d.db.Exec(context.Background(), "delete from user_segments where user_id=$1 and segment_name=$2", user_id, segement_name)
 	if err != nil {
 		fmt.Println(err)
 	}

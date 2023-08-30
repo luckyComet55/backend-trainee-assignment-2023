@@ -79,18 +79,6 @@ func (d *UserSegmentMockDatabase) DeleteBySegmentName(name string) error {
 	return nil
 }
 
-func (d *UserSegmentMockDatabase) DeleteByUserIdWithSegmentName(userId int, segmentName string) error {
-	for k, v := range d.storage {
-		if v.UserId == userId && v.SegmentName == segmentName {
-			delete(d.storage, k)
-			break
-		}
-	}
-	// only possible error -- no connection
-	// however it`s disputable
-	return nil
-}
-
 func (d *UserSegmentMockDatabase) SetUserSegmentInactive(user_id int, segment_name string) error {
 	for _, v := range d.storage {
 		if v.UserId == user_id && v.SegmentName == segment_name {
