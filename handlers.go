@@ -194,7 +194,7 @@ func getUserSegmentsInPeriod(w http.ResponseWriter, r *http.Request) {
 		writeResponse(w, []byte("internal error"), 500)
 		return
 	}
-	writeResponse(w, []byte(fmt.Sprintf("http://127.0.0.1:3003/user-report/%s", filename)), 200)
+	writeResponse(w, []byte(fmt.Sprintf("http://%s/user-report/%s", r.Host, filename)), 200)
 }
 
 func downloadUserReport(w http.ResponseWriter, r *http.Request) {

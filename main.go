@@ -24,7 +24,6 @@ func initDatabaseConnection(ctx context.Context) (ksql.DB, error) {
 	psUser := os.Getenv("POSTGRES_USER")
 	psPassword := os.Getenv("POSTGRES_PASSWORD")
 	connString := fmt.Sprintf("postgresql://%s:%s@localhost:%s/%s", psUser, psPassword, psPort, psDb)
-	fmt.Printf("%s\n", connString)
 	conn, err := kpgx.New(ctx, connString, ksql.Config{})
 	if err != nil {
 		fmt.Printf("Could not connect to postgres: %v\n", err)
