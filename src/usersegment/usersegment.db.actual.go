@@ -21,6 +21,21 @@ func NewUserSegmentActualDatabase(db ksql.DB) *UserSegmentActualDatabase {
 }
 
 func (d *UserSegmentActualDatabase) CreateObject(s UserSegment) error {
+	var check UserSegment
+	if err := d.db.QueryOne(context.Background(), &check, "select * from user_segments where user_id=$1 and segment_name=$2", s.UserId, s.SegmentName); err == nil {
+		_, err := d.db.Exec(
+			context.Background(),
+			"update user_segments set added_at=now(), removed_at=null, is_active='true' where user_id=$1 and segment_name=$2",
+			s.UserId,
+			s.SegmentName,
+		)
+		if err != nil {
+			fmt.Println(err)
+			return db_.ErrInternal{}
+		}
+		return nil
+	}
+
 	_, err := d.db.Exec(context.Background(), "insert into user_segments(user_id, segment_name) values($1, $2)", s.UserId, s.SegmentName)
 	if err != nil {
 		fmt.Println(err)
