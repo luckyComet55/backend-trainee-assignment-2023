@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,7 +22,8 @@ func initDatabaseConnection(ctx context.Context) (ksql.DB, error) {
 	psDb := os.Getenv("POSTGRES_DB")
 	psUser := os.Getenv("POSTGRES_USER")
 	psPassword := os.Getenv("POSTGRES_PASSWORD")
-	connString := fmt.Sprintf("postgresql://%s:%s@localhost:%s/%s", psUser, psPassword, psPort, psDb)
+	psHost := os.Getenv("POSTGRES_HOST")
+	connString := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", psUser, psPassword, psHost, psPort, psDb)
 	conn, err := kpgx.New(ctx, connString, ksql.Config{})
 	if err != nil {
 		fmt.Printf("Could not connect to postgres: %v\n", err)
@@ -53,8 +53,7 @@ func main() {
 	}
 	defer conn.Close()
 	initRepo(conn)
-	port := flag.String("port", "3003", "port the server will listen to")
-	flag.Parse()
+	port := os.Getenv("APP_PORT")
 	r := chi.NewRouter()
 	r.Get("/", helloRootHandler)
 	r.Post("/{segmentName}", createSegmentHandler)
@@ -64,5 +63,5 @@ func main() {
 	r.Get("/{userId:[0-9]+}/{year:[0-9]+}/{month:[0-9]+}", getUserSegmentsInPeriod)
 	r.Get("/user-report/{filename}", downloadUserReport)
 
-	log.Fatal(http.ListenAndServe(":"+*port, r))
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
