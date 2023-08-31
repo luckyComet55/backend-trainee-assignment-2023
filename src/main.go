@@ -23,6 +23,9 @@ func initDatabaseConnection(ctx context.Context) (ksql.DB, error) {
 	psUser := os.Getenv("POSTGRES_USER")
 	psPassword := os.Getenv("POSTGRES_PASSWORD")
 	psHost := os.Getenv("POSTGRES_HOST")
+	if psHost == "" {
+		psHost = "postgres"
+	}
 	connString := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", psUser, psPassword, psHost, psPort, psDb)
 	conn, err := kpgx.New(ctx, connString, ksql.Config{})
 	if err != nil {
