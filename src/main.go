@@ -46,7 +46,9 @@ var serviceRepo repo.ServiceMockRepository
 
 func main() {
 	ctx := context.Background()
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("error while loading .env: ", err)
+	}
 	conn, err := initDatabaseConnection(ctx)
 	if err != nil {
 		log.Fatal(err)
