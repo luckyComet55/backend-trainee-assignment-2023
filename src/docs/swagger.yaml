@@ -1,0 +1,147 @@
+definitions:
+  main.createSegmentBody:
+    properties:
+      audience_cvg:
+        type: integer
+    type: object
+  main.userModifyErrorResponse:
+    properties:
+      message:
+        type: string
+      segments_add:
+        items:
+          type: string
+        type: array
+      segments_remove:
+        items:
+          type: string
+        type: array
+    type: object
+  main.userSegmentsModifyBody:
+    properties:
+      segments_add:
+        items:
+          type: string
+        type: array
+      segments_remove:
+        items:
+          type: string
+        type: array
+      user_id:
+        type: integer
+    type: object
+  main.userSegmentsResponseBody:
+    properties:
+      segments:
+        items:
+          type: string
+        type: array
+    type: object
+info:
+  contact: {}
+paths:
+  /:
+    get:
+      responses:
+        "200":
+          description: OK
+      summary: Echo route to ckeck if server is alive
+  /{segmentName}:
+    delete:
+      parameters:
+      - description: Segment Name
+        in: path
+        name: segmentName
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      summary: Deletes segment with name specified in url
+    post:
+      parameters:
+      - description: Segment Name
+        in: path
+        name: segmentName
+        required: true
+        type: string
+      - description: Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.createSegmentBody'
+      responses:
+        "200":
+          description: OK
+      summary: Creates segment with name specified in url and audience_cvg in body
+  /{userId}:
+    get:
+      parameters:
+      - description: User Id
+        in: path
+        name: userId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.userSegmentsResponseBody'
+      summary: Get user active segments
+  /{userId}/{year}/{month}:
+    get:
+      description: returnes url to report file or an error
+      parameters:
+      - description: User Id
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Year
+        in: path
+        name: year
+        required: true
+        type: integer
+      - description: Month
+        in: path
+        name: month
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+      summary: Creates report about user segment acivity inspecified month
+  /modify-user-segments:
+    put:
+      description: |-
+        user and segments exist in the database.
+        if not, error is returned.
+      parameters:
+      - description: Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.userSegmentsModifyBody'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.userModifyErrorResponse'
+      summary: modifies users segments
+  /user-report/{filename}:
+    get:
+      parameters:
+      - description: Filename
+        in: path
+        name: filename
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      summary: downloads report ebout user activity
+swagger: "2.0"

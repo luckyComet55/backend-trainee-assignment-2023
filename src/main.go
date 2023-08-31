@@ -9,10 +9,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
+	_ "github.com/luckyComet55/backend-trainee-assignment-2023/docs"
 	repo "github.com/luckyComet55/backend-trainee-assignment-2023/repository"
 	sg "github.com/luckyComet55/backend-trainee-assignment-2023/segment"
 	u "github.com/luckyComet55/backend-trainee-assignment-2023/user"
 	ug "github.com/luckyComet55/backend-trainee-assignment-2023/usersegment"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/vingarcia/ksql"
 	"github.com/vingarcia/ksql/adapters/kpgx"
 )
@@ -60,6 +62,9 @@ func main() {
 	initRepo(conn)
 	port := os.Getenv("APP_PORT")
 	r := chi.NewRouter()
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL(fmt.Sprintf("http://localhost:%s/swagger/doc.json", port)),
+	))
 	r.Get("/", helloRootHandler)
 	r.Post("/{segmentName}", createSegmentHandler)
 	r.Delete("/{segmentName}", deleteSegmentHandler)

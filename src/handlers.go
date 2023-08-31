@@ -39,10 +39,20 @@ func (u userSegmentsModifyBody) String() string {
 	return fmt.Sprintf("\n========\nUSER %dto add: %v\nto remove%v\n========\n", u.UserId, u.SegmentsToAdd, u.SegmentsToRemove)
 }
 
+// RootHandler godoc
+// @Summary Echo route to ckeck if server is alive
+// @Success 200
+// @Router / [get]
 func helloRootHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "OK")
 }
 
+// CreateSegment godoc
+// @Summary Creates segment with name specified in url and audience_cvg in body
+// @Param segmentName path string true "Segment Name"
+// @Param request body main.createSegmentBody true "Body"
+// @Success 200
+// @Router /{segmentName} [post]
 func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	var reqBody createSegmentBody
 	decoder := json.NewDecoder(r.Body)
@@ -74,6 +84,11 @@ func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, []byte("OK"), 200)
 }
 
+// DeleteSegment godoc
+// @Summary Deletes segment with name specified in url
+// @Param segmentName path string true "Segment Name"
+// @Success 200
+// @Router /{segmentName} [delete]
 func deleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	segmentName := chi.URLParam(r, "segmentName")
 	res := "OK"
@@ -86,6 +101,15 @@ func deleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, res)
 }
 
+// MOdifyUserSegments godoc
+// @Summary modifies users segments
+// @discription first handler checks if provided
+// @description user and segments exist in the database.
+// @description if not, error is returned.
+// @Param request body main.userSegmentsModifyBody true "Body"
+// @Success 200
+// @Failure 400 {object} main.userModifyErrorResponse
+// @Router /modify-user-segments [put]
 func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 	var reqBody userSegmentsModifyBody
 	decoder := json.NewDecoder(r.Body)
@@ -149,6 +173,11 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, []byte("OK"), 200)
 }
 
+// GetUserSegments godoc
+// @Summary Get user active segments
+// @Param userId path integer true "User Id"
+// @Success 200 {object} main.userSegmentsResponseBody
+// @Router /{userId} [get]
 func getUserSegments(w http.ResponseWriter, r *http.Request) {
 	userIdStr := chi.URLParam(r, "userId")
 	userSegments := userSegmentsResponseBody{}
@@ -177,6 +206,14 @@ func getUserSegments(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, res, 200)
 }
 
+// GetUserSegmentsInPeriod
+// @Summary Creates report about user segment acivity inspecified month
+// @description returnes url to report file or an error
+// @Param userId path integer true "User Id"
+// @Param year path integer true "Year"
+// @Param month path integer true "Month"
+// @Success 200
+// @Router /{userId}/{year}/{month} [get]
 func getUserSegmentsInPeriod(w http.ResponseWriter, r *http.Request) {
 	userId, _ := strconv.Atoi(chi.URLParam(r, "userId"))
 	year, _ := strconv.Atoi(chi.URLParam(r, "year"))
@@ -205,6 +242,11 @@ func getUserSegmentsInPeriod(w http.ResponseWriter, r *http.Request) {
 	writeResponse(w, []byte(fmt.Sprintf("http://%s/user-report/%s", r.Host, filename)), 200)
 }
 
+// DownloadUserReport godoc
+// @Summary downloads report ebout user activity
+// @Param filename path string true "Filename"
+// @Success 200
+// @Router /user-report/{filename} [get]
 func downloadUserReport(w http.ResponseWriter, r *http.Request) {
 	filename := chi.URLParam(r, "filename")
 	filepath := fmt.Sprintf("./data/%s.csv", filename)
