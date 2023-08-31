@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	db_ "github.com/luckyComet55/backend-trainee-assignment-2023/database"
 	"github.com/vingarcia/ksql"
 )
 
@@ -23,6 +24,7 @@ func (d *UserActualDatabase) CreateObject(u User) error {
 	_, err := d.db.Exec(context.Background(), "insert into users default values")
 	if err != nil {
 		fmt.Println(err)
+		err = db_.ErrInternal{}
 	}
 	return err
 }
@@ -40,6 +42,7 @@ func (d *UserActualDatabase) GetUserById(id int) (User, error) {
 	err := d.db.QueryOne(context.Background(), &res, "select * from users where id=$1", id)
 	if err != nil {
 		fmt.Println(err)
+		err = db_.ErrObjNotFound{}
 	}
 	return res, err
 }

@@ -77,14 +77,11 @@ func createSegmentHandler(w http.ResponseWriter, r *http.Request) {
 func deleteSegmentHandler(w http.ResponseWriter, r *http.Request) {
 	segmentName := chi.URLParam(r, "segmentName")
 	res := "OK"
-	logStatus := "SUCCESS"
 	statusCode := 200
 	if err := serviceRepo.SegmentDb.DeleteByName(segmentName); err != nil {
 		res = "internal error"
 		statusCode = 500
-		logStatus = "DENIED"
 	}
-	fmt.Printf("%s %s ==> delete segment %s | %s\n", r.Method, r.URL.Path, segmentName, logStatus)
 	w.WriteHeader(statusCode)
 	fmt.Fprintln(w, res)
 }
@@ -101,6 +98,11 @@ func modifyUserSegments(w http.ResponseWriter, r *http.Request) {
 	toAdd := xorStringArrays(reqBody.SegmentsToAdd, reqBody.SegmentsToRemove)
 	toRm := xorStringArrays(reqBody.SegmentsToRemove, reqBody.SegmentsToAdd)
 	userId := reqBody.UserId
+
+	if _, err := serviceRepo.UserDb.GetUserById(userId); err != nil {
+		writeResponse(w, []byte(fmt.Sprintf("user with id %d not found", userId)), 404)
+		return
+	}
 
 	// it must be like some kind of a transaction
 	// so if one value is incorrect, the others will be ignored
@@ -155,6 +157,12 @@ func getUserSegments(w http.ResponseWriter, r *http.Request) {
 	// because our router checks if the
 	// value contains digits only
 	userId, _ := strconv.Atoi(userIdStr)
+
+	if _, err := serviceRepo.UserDb.GetUserById(userId); err != nil {
+		writeResponse(w, []byte(fmt.Sprintf("user with id %d not found", userId)), 404)
+		return
+	}
+
 	segmentNames := serviceRepo.GetUserActiveSegments(userId)
 	if segmentNames == nil {
 		writeResponse(w, []byte("user not found"), 404)
